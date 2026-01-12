@@ -1,3 +1,5 @@
+// src/pages/Landlord.jsx
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,63 +21,87 @@ import {
   Eye
 } from "lucide-react";
 import { Link } from "wouter";
+import { useRef } from "react";
+import { ApiSocket} from "@/utils/Apisocket";
 
-const plans = [
-  {
-    name: "Basic",
-    price: 300,
-    period: "month",
-    description: "Perfect for landlords with 1-2 properties",
-    features: [
-      "List up to 2 properties",
-      "Basic visibility in search",
-      "Receive student inquiries",
-      "Email notifications",
-    ],
-    notIncluded: [
-      "Priority listing",
-      "Verification badge",
-      "Analytics dashboard",
-    ],
-    popular: false,
-  },
-  {
-    name: "Premium",
-    price: 700,
-    period: "month",
-    description: "Best value for growing landlords",
-    features: [
-      "List up to 5 properties",
-      "Priority visibility in search",
-      "Receive student inquiries",
-      "Email & SMS notifications",
-      "Basic analytics",
-      "Featured in recommendations",
-    ],
-    notIncluded: [
-      "Verification badge",
-    ],
-    popular: true,
-  },
-  {
-    name: "Pro",
-    price: 1500,
-    period: "month",
-    description: "For professional property managers",
-    features: [
-      "Unlimited property listings",
-      "Top ranking in search results",
-      "Verification badge included",
-      "Priority support",
-      "Advanced analytics dashboard",
-      "Featured homepage placement",
-      "Bulk listing tools",
-      "API access",
-    ],
-    notIncluded: [],
-    popular: false,
-  },
-];
+
+// const plans = [
+//   {
+//     name: "Free",
+//     price: 0,
+//     period: "month",
+//     description: "Get started and try CompassHub with basic features",
+//     features: [
+//       "List 1 property",
+//       "Limited visibility in search",
+//       "Receive student inquiries",
+//       "Email notifications",
+//     ],
+//     notIncluded: [
+//       "Priority listing",
+//       "Verification badge",
+//       "Analytics dashboard",
+//       "SMS notifications",
+//       "Featured placement",
+//     ],
+//     popular: false,
+//   },
+//   {
+//     name: "Basic",
+//     price: 300,
+//     period: "month",
+//     description: "Perfect for landlords with 1-2 properties",
+//     features: [
+//       "List up to 2 properties",
+//       "Basic visibility in search",
+//       "Receive student inquiries",
+//       "Email notifications",
+//     ],
+//     notIncluded: [
+//       "Priority listing",
+//       "Verification badge",
+//       "Analytics dashboard",
+//     ],
+//     popular: false,
+//   },
+//   {
+//     name: "Premium",
+//     price: 700,
+//     period: "month",
+//     description: "Best value for growing landlords",
+//     features: [
+//       "List up to 5 properties",
+//       "Priority visibility in search",
+//       "Receive student inquiries",
+//       "Email & SMS notifications",
+//       "Basic analytics",
+//       "Featured in recommendations",
+//     ],
+//     notIncluded: [
+//       "Verification badge",
+//     ],
+//     popular: true,
+//   },
+//   {
+//     name: "Pro",
+//     price: 1500,
+//     period: "month",
+//     description: "For professional property managers",
+//     features: [
+//       "Unlimited property listings",
+//       "Top ranking in search results",
+//       "Verification badge included",
+//       "Priority support",
+//       "Advanced analytics dashboard",
+//       "Featured homepage placement",
+//       "Bulk listing tools",
+//       "API access",
+//     ],
+//     notIncluded: [],
+//     popular: false,
+//   },
+// ];
+
 
 const benefits = [
   {
@@ -134,6 +160,38 @@ const steps = [
 ];
 
 export default function Landlord() {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const pricingRef = useRef(null);
+
+    useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const data = await ApiSocket.get("/landlord/get_plans"); // ✅ uses new ApiSocket
+        setPlans(data.plans || []); // assumes backend returns { plans: [...] }
+        console.log("Fetched plans:", data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch plans:", err);
+        setError(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  // if (loading) {
+  //   return <p className="text-center mt-10">Loading plans...</p>;
+  // }
+
+  // if (error) {
+  //   return <p className="text-center mt-10 text-red-600">Error: {error}</p>;
+  // }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -157,7 +215,9 @@ export default function Landlord() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="h-14 px-8 gap-2" data-testid="button-get-started">
+              <Button size="lg" className="h-14 px-8 gap-2" data-testid="button-get-started"
+              onClick={() => pricingRef.current?.scrollIntoView({ behavior: "smooth" })}
+              >
                 Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -211,7 +271,7 @@ export default function Landlord() {
         </div>
       </section>
 
-      <section className="py-20 bg-muted/30">
+      <section ref={pricingRef} className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -261,13 +321,16 @@ export default function Landlord() {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={plan.popular ? "default" : "outline"}
-                    data-testid={`button-choose-${plan.name.toLowerCase()}`}
-                  >
-                    Choose {plan.name}
-                  </Button>
+              <Link href={`/landlord-signup?plan=${plan.id}`}>
+                <Button 
+                  className="w-full" 
+                  variant={plan.popular ? "default" : "outline"}
+                  data-testid={`button-choose-${plan.name.toLowerCase()}`}
+                >
+                  Choose {plan.name}
+                </Button>
+              </Link>
+
                 </CardContent>
               </Card>
             ))}

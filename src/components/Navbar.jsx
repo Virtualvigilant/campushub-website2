@@ -44,7 +44,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login">
+            <Link href="/signin">
               <Button variant="ghost" data-testid="button-login">
                 Log In
               </Button>
@@ -82,7 +82,7 @@ export function Navbar() {
               </Link>
             ))}
             <div className="pt-4 border-t border-border/50 space-y-2">
-              <Link href="/login">
+              <Link href="/signin">
                 <Button variant="outline" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                   Log In
                 </Button>

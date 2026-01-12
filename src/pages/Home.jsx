@@ -19,6 +19,10 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import heroImage from "@assets/generated_images/student_housing_hero_image.png";
+// import ApiSocket from "@/utils/ApiSocket";
+import { useState } from "react";
+
+
 
 const featuredRooms = [
   {
@@ -98,6 +102,15 @@ const steps = [
   { step: 3, title: "Browse & Book", description: "View verified listings and schedule viewings" },
   { step: 4, title: "Move In", description: "Chat with landlords, reserve, and move into your new home" },
 ];
+
+// const [data, setData] = useState("");
+
+// run useeffect to connect to socket on mount
+
+// useEffect(() => {
+//   ApiSocket.get("/comrade/get_listings").then(console.log);
+// }, []);
+
 
 export default function Home() {
   return (
