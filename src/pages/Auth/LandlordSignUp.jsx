@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { ApiSocket} from "@/utils/Apisocket";
+import { ApiSocket} from "@/utils/ApiSocket";
 import OtpVerification from "../Auth/OtpVerification";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +49,7 @@ export default function LandlordSignUp() {
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
-      }
+      }7
     };
 
     fetchPlan();
