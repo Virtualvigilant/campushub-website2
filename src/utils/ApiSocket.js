@@ -60,7 +60,8 @@ async function apiRequest(path, options = {}) {
 
   const headers = {
     "Content-Type": "application/json",
-    "X-Device-ID": deviceId,
+    // code 401 bug here below
+    // "X-Device-ID": deviceId,
     ...(options.headers || {}),
   };
 
