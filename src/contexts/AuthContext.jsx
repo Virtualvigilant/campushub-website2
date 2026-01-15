@@ -147,7 +147,7 @@ const mpesaSignup = async (payload) => {
     }
   } catch (err) {
     console.error("[Auth][Mpesa] ERROR:", err);
-    setAuthStatus(AUTH.MPESA);
+    setAuthStatus(AUTH.UNAUTHENTICATED);
     setError(err?.error || err?.message || "Invalid Mpesa push");
     return false;
   }

@@ -8,13 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { ApiSocket } from "@/utils/ApiSocket";
 import OtpVerification from "../Auth/OtpVerification";
+import LoadingScreen from "../Auth/LoadingScreen"
 
 import { useAuth } from "@/contexts/AuthContext";
 
 /* ================= PAGE ================= */
 
 export default function LandlordSignUp() {
-  const { signup, mpesaSignup } = useAuth();
+  const { signup, mpesaSignup, error } = useAuth();
   // const [plan, setPlan] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState({
     price: 0,
@@ -26,7 +27,7 @@ export default function LandlordSignUp() {
   });
   const [location, setLocation] = useLocation();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [planerror, setPlanError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("mpesa");
 
   const params = new URLSearchParams(window.location.search);
@@ -43,10 +44,10 @@ export default function LandlordSignUp() {
         const data = await ApiSocket.get(`/landlord/get_plan_details/${planId}`); // ✅ backticks + correct variable
         setSelectedPlan(data.plan || []); // assumes backend returns { plan: [...] }
         console.log("Fetched plan:", data);
-        setError(null);
+        setPlanError(null);
       } catch (err) {
         console.error("Failed to fetch plan:", err);
-        setError(err.message || "Unknown error");
+        setPlanError(err.message || "Unknown error");
       } finally {
         setLoading(false);
       } 7
@@ -54,16 +55,6 @@ export default function LandlordSignUp() {
 
     fetchPlan();
   }, []);
-
-  //   if (loading) {
-  //     return <p className="text-center mt-10">Loading plans...</p>;
-  //   }
-
-  //   if (error) {
-  //     return <p className="text-center mt-10 text-red-600">Error: {error}</p>;
-  //   }
-
-  //   if (!selectedPlan) return <p className="text-center mt-10">No plan selected</p>;
 
 
 
@@ -93,9 +84,29 @@ export default function LandlordSignUp() {
     name: "",
   });
 
+  const handleMpesaPhoneChange = (e) => {
+  let value = e.target.value;
+
+  // Remove non-numeric characters
+  value = value.replace(/\D/g, '');
+
+  // Convert 0XXXXXXXXX → 254XXXXXXXXX
+  if (value.startsWith('0')) {
+    value = '254' + value.slice(1);
+  }
+
+  // Allow only up to 12 digits (254 + 9 digits)
+  if (value.length > 12) return;
+
+  setMpesaPhone(value);
+};
+
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
+
+  
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -125,92 +136,16 @@ export default function LandlordSignUp() {
     // alert("Error");
   }
 
-  //   if (paymentMethod === "free") {
-  //     useEffect(() => {
-  //         setMpesaPhone("");
-  //     }, [paymentMethod]);
-  //     const handleSignupSubmit = async (e) => {
-  //     e.preventDefault();
-  //     await signup(form);
-  //     // OTP routing is handled globally by authStatus
-  //   };
-  //   }
-
-
-  // useEffect(() => {
-  //   if (screen !== "mpesa") return; // only poll when on M-Pesa screen
-
-  //   const interval = setInterval(async () => {
-  //     try {
-  //       const data = await ApiSocket.get(`/landlord/check_mpesa_status/${form.email}`);
-  //       if (data.status === "completed") {
-  //         clearInterval(interval);
-  //         setScreen("creating");
-  //         setTimeout(() => setScreen("success"), 2000); // simulate account creation
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to check M-Pesa status:", err);
-  //     }
-  //   }, 5000);
-
-  //   return () => clearInterval(interval); // cleanup on unmount
-  // }, [screen, form.email]);
+  
 
 
 
-  //screen if payment method is mpesa
+
   /* ================= RENDER SCREENS ================= */
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (loading) return <LoadingScreen/>;
+  // if (error) return <p className="text-red-600">{error}</p>;
+  if (planerror) return <p className="text-red-600">{planerror}</p>
 
-  // if (screen === "otp") {
-  //   return (
-  //        <OtpVerification email={form.email} setScreen={setScreen} />
-  //   //   <Card className="max-w-md mx-auto mt-10 p-6" id="otp-screen">
-  //   //     <CardHeader>
-  //   //       <CardTitle>Verify Email</CardTitle>
-  //   //     </CardHeader>
-  //   //     <CardContent className="space-y-4">
-  //   //       <Input placeholder="Enter OTP" />
-  //   //       <Button onClick={() => setScreen("creating")}>Verify & Continue</Button>
-  //   //     </CardContent>
-  //   //   </Card>
-  //   );
-  // }
-
-  // if (screen === "mpesa") {
-  //   return (
-  //     <Card className="max-w-md mx-auto mt-10 p-6">
-  //       <CardHeader>
-  //         <CardTitle>M-Pesa Payment</CardTitle>
-  //       </CardHeader>
-  //       <CardContent className="space-y-4">
-  //         <div className="flex items-center gap-2"><Phone /> Wait for M-Pesa prompt</div>
-  //         <div className="flex items-center gap-2"><Check /> Approve payment</div>
-  //         <div className="flex items-center gap-2"><Loader2 className="animate-spin" /> Waiting for confirmation...</div>
-  //       </CardContent>
-  //     </Card>
-  //   );
-  // }
-
-  // if (screen === "creating") {
-  //   return (
-  //     <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
-  //       <Loader2 className="animate-spin" />
-  //       <span>Creating account...</span>
-  //     </Card>
-  //   );
-  // }
-
-  // if (screen === "success") {
-  //   return (
-  //     <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
-  //       <Check className="text-green-600" />
-  //       <span>Account created successfully! Redirecting...</span>
-  //       {setTimeout(() => setLocation("/landlord/dashboard"), 2000)}
-  //     </Card>
-  //   );
-  // }
 
 
   return (
@@ -223,6 +158,13 @@ export default function LandlordSignUp() {
             <CardTitle>Create Landlord Account</CardTitle>
           </CardHeader>
           <CardContent>
+            
+            {/* best way of rendering error */}
+             {error && (
+            <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
+              {error}
+            </div>
+          )}
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* ===== Account ===== */}
@@ -262,7 +204,7 @@ export default function LandlordSignUp() {
                     <Input
                       placeholder="M-Pesa phone number (07xxxxxxxx)"
                       value={mpesaPhone}
-                      onChange={(e) => setMpesaPhone(e.target.value)}
+                      onChange={handleMpesaPhoneChange}
                       required
                     />
                   )}
@@ -334,9 +276,9 @@ export default function LandlordSignUp() {
               <span>Total</span>
               <span className="font-bold">KES {selectedPlan.price.toLocaleString()}</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            {/* <p className="text-sm text-muted-foreground">
               This is a mock checkout. Real payment integration will be added later.
-            </p>
+            </p> */}
           </CardContent>
         </Card>
 
