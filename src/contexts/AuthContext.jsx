@@ -165,23 +165,33 @@ const paymentstatusCheck = async (checkoutId) =>{
         setMpesaMessage(res.message)
         setPendingEmail(res.email);
         setCheckoutId(null)
+        localStorage.removeItem("checkoutId");
         return true;
       }
     else if (res?.status === "failed") {
     setMpesaStatus("failed");
     setMpesaMessage(res.message || "Payment failed");
     setCheckoutId(null)
+    localStorage.removeItem("checkoutId");
     return false;
 }
     
-  } catch (error) {
-    console.error("[Auth][Mpesa] ERROR:", err);
-    setAuthStatus(AUTH.OTP_REQUIRED);
-    setMpesaStatus("failed")
-    setMpesaMessage(err?.message || "Payment check failed");
-    setError(err?.error || err?.message || "Invalid Mpesa push");
+  }catch (err) {
+  console.error("[Auth][Mpesa] ERROR:", err);
+
+  // session expired → hard stop
+  if (err?.status === 401) {
+    setCheckoutId(null);
+    localStorage.removeItem("checkoutId");
     return false;
   }
+
+  // transient error → KEEP checkoutId
+  setMpesaStatus("pending");
+  setMpesaMessage("Checking payment status… please wait");
+  return false;
+}
+
 }
 
 
@@ -298,6 +308,11 @@ const paymentstatusCheck = async (checkoutId) =>{
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_status");
     localStorage.removeItem("pending_email");
+    setCheckoutId(null);
+    setMpesaStatus(null);
+    setMpesaMessage(null);
+    localStorage.removeItem("checkoutId");
+
   };
 
   // logout on token expiration 
