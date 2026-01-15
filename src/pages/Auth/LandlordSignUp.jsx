@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { ApiSocket} from "@/utils/ApiSocket";
+import { ApiSocket } from "@/utils/ApiSocket";
 import OtpVerification from "../Auth/OtpVerification";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,29 +14,29 @@ import { useAuth } from "@/contexts/AuthContext";
 /* ================= PAGE ================= */
 
 export default function LandlordSignUp() {
-    const { signup } = useAuth();
-    // const [plan, setPlan] = useState(null);
-    const [selectedPlan, setSelectedPlan] = useState({
-  price: 0,
-  name: "",
-  period: "",
-  description: "",
-  features: [],
-  notIncluded: []
-});
-    const [location, setLocation] = useLocation();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState("mpesa");
+  const { signup, mpesaSignup } = useAuth();
+  // const [plan, setPlan] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState({
+    price: 0,
+    name: "",
+    period: "",
+    description: "",
+    features: [],
+    notIncluded: []
+  });
+  const [location, setLocation] = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("mpesa");
 
-    const params = new URLSearchParams(window.location.search);
-    const planId = params.get("plan");
-    const [screen, setScreen] = useState("form"); 
-// possible values: "form", "otp", "mpesa", "creating", "success"
+  const params = new URLSearchParams(window.location.search);
+  const planId = params.get("plan");
+  const [screen, setScreen] = useState("form");
+  // possible values: "form", "otp", "mpesa", "creating", "success"
 
 
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchPlan = async () => {
       try {
         setLoading(true);
@@ -49,21 +49,21 @@ export default function LandlordSignUp() {
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
-      }7
+      } 7
     };
 
     fetchPlan();
   }, []);
 
-//   if (loading) {
-//     return <p className="text-center mt-10">Loading plans...</p>;
-//   }
+  //   if (loading) {
+  //     return <p className="text-center mt-10">Loading plans...</p>;
+  //   }
 
-//   if (error) {
-//     return <p className="text-center mt-10 text-red-600">Error: {error}</p>;
-//   }
+  //   if (error) {
+  //     return <p className="text-center mt-10 text-red-600">Error: {error}</p>;
+  //   }
 
-//   if (!selectedPlan) return <p className="text-center mt-10">No plan selected</p>;
+  //   if (!selectedPlan) return <p className="text-center mt-10">No plan selected</p>;
 
 
 
@@ -79,11 +79,11 @@ export default function LandlordSignUp() {
   });
 
 
-useEffect(() => {
-  if (selectedPlan) {
-    setPaymentMethod(selectedPlan.price === 0 ? "free" : "mpesa");
-  }
-}, [selectedPlan]);
+  useEffect(() => {
+    if (selectedPlan) {
+      setPaymentMethod(selectedPlan.price === 0 ? "free" : "mpesa");
+    }
+  }, [selectedPlan]);
 
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [card, setCard] = useState({
@@ -97,18 +97,8 @@ useEffect(() => {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-async function handleSubmit(e) {
-  e.preventDefault();
-
-  if (selectedPlan.price === 0) {
-        await signup(form);
-    
-    // Free plan → show OTP verification screen
-    setScreen("otp");
-  } else if (paymentMethod === "mpesa") {
-    // Paid plan → show M-Pesa payment screen
-    setScreen("mpesa");
-  }
+  async function handleSubmit(e) {
+    e.preventDefault();
 
     const payload = {
       user: form,
@@ -120,41 +110,51 @@ async function handleSubmit(e) {
       },
     };
 
-    console.log("SUBMIT PAYLOAD:", payload);
-
-    alert("Signup + payment submitted (mock). Check console.");
+    if (selectedPlan.price === 0) {
+      await signup(form);
+      console.log("SUBMIT form:", form);
+      // Free plan → show OTP verification screen
+      // setScreen("otp");
+    } else if (paymentMethod === "mpesa") {
+      await mpesaSignup(payload)
+      console.log("SUBMIT PAYLOAD:", payload);
+      // Paid plan → show M-Pesa payment screen
+      // setScreen("mpesa");
+    }
+    // alert("Signup + payment submitted (mock). Check console.");
+    // alert("Error");
   }
 
-//   if (paymentMethod === "free") {
-//     useEffect(() => {
-//         setMpesaPhone("");
-//     }, [paymentMethod]);
-//     const handleSignupSubmit = async (e) => {
-//     e.preventDefault();
-//     await signup(form);
-//     // OTP routing is handled globally by authStatus
-//   };
-//   }
+  //   if (paymentMethod === "free") {
+  //     useEffect(() => {
+  //         setMpesaPhone("");
+  //     }, [paymentMethod]);
+  //     const handleSignupSubmit = async (e) => {
+  //     e.preventDefault();
+  //     await signup(form);
+  //     // OTP routing is handled globally by authStatus
+  //   };
+  //   }
 
 
-// useEffect(() => {
-//   if (screen !== "mpesa") return; // only poll when on M-Pesa screen
+  // useEffect(() => {
+  //   if (screen !== "mpesa") return; // only poll when on M-Pesa screen
 
-//   const interval = setInterval(async () => {
-//     try {
-//       const data = await ApiSocket.get(`/landlord/check_mpesa_status/${form.email}`);
-//       if (data.status === "completed") {
-//         clearInterval(interval);
-//         setScreen("creating");
-//         setTimeout(() => setScreen("success"), 2000); // simulate account creation
-//       }
-//     } catch (err) {
-//       console.error("Failed to check M-Pesa status:", err);
-//     }
-//   }, 5000);
+  //   const interval = setInterval(async () => {
+  //     try {
+  //       const data = await ApiSocket.get(`/landlord/check_mpesa_status/${form.email}`);
+  //       if (data.status === "completed") {
+  //         clearInterval(interval);
+  //         setScreen("creating");
+  //         setTimeout(() => setScreen("success"), 2000); // simulate account creation
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to check M-Pesa status:", err);
+  //     }
+  //   }, 5000);
 
-//   return () => clearInterval(interval); // cleanup on unmount
-// }, [screen, form.email]);
+  //   return () => clearInterval(interval); // cleanup on unmount
+  // }, [screen, form.email]);
 
 
 
@@ -163,54 +163,54 @@ async function handleSubmit(e) {
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
 
-  if (screen === "otp") {
-    return (
-         <OtpVerification email={form.email} setScreen={setScreen} />
-    //   <Card className="max-w-md mx-auto mt-10 p-6" id="otp-screen">
-    //     <CardHeader>
-    //       <CardTitle>Verify Email</CardTitle>
-    //     </CardHeader>
-    //     <CardContent className="space-y-4">
-    //       <Input placeholder="Enter OTP" />
-    //       <Button onClick={() => setScreen("creating")}>Verify & Continue</Button>
-    //     </CardContent>
-    //   </Card>
-    );
-  }
+  // if (screen === "otp") {
+  //   return (
+  //        <OtpVerification email={form.email} setScreen={setScreen} />
+  //   //   <Card className="max-w-md mx-auto mt-10 p-6" id="otp-screen">
+  //   //     <CardHeader>
+  //   //       <CardTitle>Verify Email</CardTitle>
+  //   //     </CardHeader>
+  //   //     <CardContent className="space-y-4">
+  //   //       <Input placeholder="Enter OTP" />
+  //   //       <Button onClick={() => setScreen("creating")}>Verify & Continue</Button>
+  //   //     </CardContent>
+  //   //   </Card>
+  //   );
+  // }
 
-  if (screen === "mpesa") {
-    return (
-      <Card className="max-w-md mx-auto mt-10 p-6">
-        <CardHeader>
-          <CardTitle>M-Pesa Payment</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2"><Phone /> Wait for M-Pesa prompt</div>
-          <div className="flex items-center gap-2"><Check /> Approve payment</div>
-          <div className="flex items-center gap-2"><Loader2 className="animate-spin" /> Waiting for confirmation...</div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // if (screen === "mpesa") {
+  //   return (
+  //     <Card className="max-w-md mx-auto mt-10 p-6">
+  //       <CardHeader>
+  //         <CardTitle>M-Pesa Payment</CardTitle>
+  //       </CardHeader>
+  //       <CardContent className="space-y-4">
+  //         <div className="flex items-center gap-2"><Phone /> Wait for M-Pesa prompt</div>
+  //         <div className="flex items-center gap-2"><Check /> Approve payment</div>
+  //         <div className="flex items-center gap-2"><Loader2 className="animate-spin" /> Waiting for confirmation...</div>
+  //       </CardContent>
+  //     </Card>
+  //   );
+  // }
 
-  if (screen === "creating") {
-    return (
-      <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
-        <Loader2 className="animate-spin" />
-        <span>Creating account...</span>
-      </Card>
-    );
-  }
+  // if (screen === "creating") {
+  //   return (
+  //     <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
+  //       <Loader2 className="animate-spin" />
+  //       <span>Creating account...</span>
+  //     </Card>
+  //   );
+  // }
 
-  if (screen === "success") {
-    return (
-      <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
-        <Check className="text-green-600" />
-        <span>Account created successfully! Redirecting...</span>
-        {setTimeout(() => setLocation("/landlord/dashboard"), 2000)}
-      </Card>
-    );
-  }
+  // if (screen === "success") {
+  //   return (
+  //     <Card className="max-w-md mx-auto mt-10 p-6 flex items-center justify-center gap-4">
+  //       <Check className="text-green-600" />
+  //       <span>Account created successfully! Redirecting...</span>
+  //       {setTimeout(() => setLocation("/landlord/dashboard"), 2000)}
+  //     </Card>
+  //   );
+  // }
 
 
   return (
@@ -227,7 +227,7 @@ async function handleSubmit(e) {
 
               {/* ===== Account ===== */}
               <div className="space-y-4">
-                <Input name="name" placeholder="Full name" value={form.name} onChange={handleChange} required />
+                <Input name="username" placeholder="Full name" value={form.username} onChange={handleChange} required />
                 <Input name="email" type="email" placeholder="Email address" value={form.email} onChange={handleChange} required />
                 <Input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
               </div>
@@ -241,9 +241,8 @@ async function handleSubmit(e) {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("mpesa")}
-                      className={`flex-1 border rounded-lg p-3 ${
-                        paymentMethod === "mpesa" ? "border-primary" : "border-border"
-                      }`}
+                      className={`flex-1 border rounded-lg p-3 ${paymentMethod === "mpesa" ? "border-primary" : "border-border"
+                        }`}
                     >
                       M-Pesa
                     </button>
@@ -251,9 +250,8 @@ async function handleSubmit(e) {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("card")}
-                      className={`flex-1 border rounded-lg p-3 ${
-                        paymentMethod === "card" ? "border-primary" : "border-border"
-                      }`}
+                      className={`flex-1 border rounded-lg p-3 ${paymentMethod === "card" ? "border-primary" : "border-border"
+                        }`}
                     >
                       Card
                     </button>

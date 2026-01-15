@@ -14,8 +14,68 @@ import Listings from "./pages/Listings";
 import RoomDetail from "./pages/RoomDetail";
 import Landlord from "./pages/Landlord";
 import LandlordSignUp from "./pages/Auth/LandlordSignUp";
+import OtpVerification from "./pages/Auth/OtpVerification";
+import { useAuth } from "./contexts/AuthContext"
+import LoadingScreen from "./pages/Auth/LoadingScreen";
+import RoleRouter from "./RoleRouter";
+import MpesaScreen from "./pages/Auth/MpesaScreen";
+
+
+
 
 function Router() {
+  const { authStatus } = useAuth()
+
+  //if authenticated
+
+  if (authStatus === "authenticated") {
+    return (
+      <Switch>
+        <Route>
+          <RoleRouter />
+        </Route>
+      </Switch>
+    );
+  }
+
+
+
+  // screen flow 
+  if (authStatus === "otp_required") {
+    return (
+      <Switch>
+        <Route>
+          <OtpVerification />
+        </Route>
+      </Switch>
+    );
+  }
+
+  // when loading later can add loading from diff contexts
+
+  if (authStatus === "loading") {
+    return (
+      <Switch>
+        <Route>
+          <LoadingScreen />
+        </Route>
+      </Switch>
+
+    )
+  }
+
+    if (authStatus === "mpesa") {
+    return (
+      <Switch>
+        <Route>
+          <MpesaScreen />
+        </Route>
+      </Switch>
+
+    )
+  }
+
+
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -24,8 +84,8 @@ function Router() {
       <Route path="/landlord" component={Landlord} />
 
       <Route path="/landlord-signup">
-  <LandlordSignUp />
-</Route>
+        <LandlordSignUp />
+      </Route>
 
 
       {/* AUTH */}

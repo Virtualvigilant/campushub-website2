@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Users, Building2, Briefcase } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "../../contexts/AuthContext";
 
 const roles = [
   { key: "comrade", label: "Comrade", icon: Users },
@@ -16,26 +17,28 @@ const roles = [
 ];
 
 export default function SignIn() {
+  const { login } = useAuth()
   const [, setLocation] = useLocation();
   const [role, setRole] = useState("comrade");
   const [form, setForm] = useState({ email: "", password: "" });
 
-  function handleRoleSelect(r) {
-    if (r !== "comrade") {
-      setLocation(`/${r}`); // redirect to other flow
-      return;
-    }
-    setRole(r);
-  }
+  // function handleRoleSelect(r) {
+  //   if (r !== "comrade") {
+  //     setLocation(`/${r}`); // redirect to other flow
+  //     return;
+  //   }
+  //   setRole(r);
+  // }
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    await login (form)
 
     // MOCK LOGIN
     console.log("LOGIN DATA:", { role, ...form });
 
-    alert("Mock login successful!");
-    setLocation("/dashboard");
+    // alert("login successful!");
+    // setLocation("/dashboard");
   }
 
   return (
@@ -49,7 +52,7 @@ export default function SignIn() {
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
 
             {/* ROLE SELECTOR */}
-            <div className="flex gap-2 justify-center">
+            {/* <div className="flex gap-2 justify-center">
               {roles.map((r) => {
                 const Icon = r.icon;
                 return (
@@ -65,7 +68,7 @@ export default function SignIn() {
                   </Button>
                 );
               })}
-            </div>
+            </div> */}
           </CardHeader>
 
           <CardContent>

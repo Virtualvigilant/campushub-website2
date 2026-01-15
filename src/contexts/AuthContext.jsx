@@ -9,6 +9,7 @@ export const AUTH = {
   AUTHENTICATED: "authenticated",
   UNAUTHENTICATED: "unauthenticated",
   OTP_REQUIRED: "otp_required",
+  MPESA: "mpesa",
 };
 
 export const AuthProvider = ({ children }) => {
@@ -31,6 +32,18 @@ export const AuthProvider = ({ children }) => {
     console.log("[Auth][Init] Loaded pendingEmail from localStorage:", email);
     return email;
   });
+
+  const [checkoutId, setCheckoutId] = useState(() =>{
+    const checkoutId = localStorage.getItem("checkoutId") || null;
+    return checkoutId;
+  })
+
+  // const [ checkoutId, setCheckoutId ] = useState(null)
+
+  const [ mpesaStatus, setMpesaStatus ] = useState(null)
+
+  const [ mpesaMessage, setMpesaMessage ] = useState(null)
+
 
   const [error, setError] = useState(null);
   const [signupPayload, setSignupPayload] = useState(null);
@@ -66,6 +79,12 @@ export const AuthProvider = ({ children }) => {
     if (pendingEmail) localStorage.setItem("pending_email", pendingEmail);
     else localStorage.removeItem("pending_email");
   }, [pendingEmail]);
+
+    useEffect(() => {
+    console.log("[Auth][useEffect] Updating localStorage for checkoutId:", checkoutId);
+    if (checkoutId) localStorage.setItem("checkoutId", checkoutId);
+    else localStorage.removeItem("checkoutId");
+  }, [checkoutId]);
 
   /* =========================
      HELPERS
@@ -107,6 +126,65 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   };
+
+
+  
+  // landlord signup mpesa
+const mpesaSignup = async (payload) => {
+  const { user, plan, payment } = payload;
+  setAuthStatus(AUTH.LOADING);
+
+  try {
+    const res = await ApiSocket.post(
+      "/mpesaPaymentGetways/landlord_mpesa_signup",
+      { user, plan, payment }
+    );
+
+    if (res?.status === "mpesa") {
+      setAuthStatus(AUTH.MPESA);
+      setCheckoutId(res.checkout_request_id)
+      return true;
+    }
+  } catch (err) {
+    console.error("[Auth][Mpesa] ERROR:", err);
+    setAuthStatus(AUTH.MPESA);
+    setError(err?.error || err?.message || "Invalid Mpesa push");
+    return false;
+  }
+};
+
+// 5 second pull to check mpesa payment
+
+const paymentstatusCheck = async (checkoutId) =>{
+  try {
+    const res = await ApiSocket.get(`/mpesaPaymentGetways/landlord_payment_status_check/${checkoutId}`);
+
+    if (res?.status === "paid") {
+        setAuthStatus(AUTH.OTP_REQUIRED);
+        setMpesaStatus(res.status)
+        setMpesaMessage(res.message)
+        setPendingEmail(res.email);
+        setCheckoutId(null)
+        return true;
+      }
+    else if (res?.status === "failed") {
+    setMpesaStatus("failed");
+    setMpesaMessage(res.message || "Payment failed");
+    setCheckoutId(null)
+    return false;
+}
+    
+  } catch (error) {
+    console.error("[Auth][Mpesa] ERROR:", err);
+    setAuthStatus(AUTH.OTP_REQUIRED);
+    setMpesaStatus("failed")
+    setMpesaMessage(err?.message || "Payment check failed");
+    setError(err?.error || err?.message || "Invalid Mpesa push");
+    return false;
+  }
+}
+
+
 
   /* =========================
      VERIFY OTP
@@ -238,7 +316,7 @@ export const AuthProvider = ({ children }) => {
   /* =========================
      CONTEXT VALUE
   ========================= */
-  const value = { user, authStatus, pendingEmail, signupPayload, error, signup, verifyOtp, login, logout };
+  const value = { user, authStatus, pendingEmail, signupPayload, error, mpesaMessage, mpesaStatus, checkoutId, signup, verifyOtp, login, logout, mpesaSignup, paymentstatusCheck};
 
   console.log("[Auth] Current state:", { user, authStatus, pendingEmail,signupPayload, error });
 

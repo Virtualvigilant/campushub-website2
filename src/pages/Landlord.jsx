@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useRef } from "react";
-import { ApiSocket} from "@/utils/Apisocket";
+import { ApiSocket} from "@/utils/ApiSocket";
 
 
 // const plans = [
