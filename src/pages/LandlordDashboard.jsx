@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/landlord/DashboardLayout";
 import DashboardHome from "@/components/landlord/DashboardHome";
 import PropertiesPanel from "@/components/landlord/PropertiesPanel";
 import ListingsPanel from "@/components/landlord/ListingsPanel";
+import { Footer } from "@/components/Footer";
 
 export default function LandlordDashboard() {
   const [active, setActive] = useState("dashboard");
@@ -16,6 +17,7 @@ export default function LandlordDashboard() {
   ]);
 
   return (
+    <>
     <DashboardLayout active={active} setActive={setActive}>
       {active === "dashboard" && (
         <DashboardHome properties={properties} listings={listings} />
@@ -24,6 +26,7 @@ export default function LandlordDashboard() {
       {active === "properties" && <PropertiesPanel properties={properties} />}
 
       {active === "listings" && <ListingsPanel listings={listings} />}
-    </DashboardLayout>
+      {/* <Footer /> */}
+    </DashboardLayout></>
   );
 }
