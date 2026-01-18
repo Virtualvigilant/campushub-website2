@@ -160,11 +160,11 @@ export default function LandlordSignUp() {
           <CardContent>
             
             {/* best way of rendering error */}
-             {error && (
-            <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
-              {error}
-            </div>
-          )}
+              {error && (
+              <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* ===== Account ===== */}

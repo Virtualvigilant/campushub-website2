@@ -120,7 +120,8 @@ export default function AddPropertyModal({ open, onClose, onSuccess }) {
       onClose();
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.error || "Failed to add property");
+      console.log("Axios error object:", err); // <-- inspect this
+      setError(err?.response?.data?.error || err?.message || "Failed to add property");
     } finally {
       setLoading(false);
     }

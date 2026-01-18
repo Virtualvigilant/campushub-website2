@@ -38,6 +38,7 @@ export default function LandlordProperties() {
     async function fetchProperties() {
       try {
         const res = await ApiSocket.get("/landlord/get_properties");
+        console.log("Fetched properties:", res);
         setProperties(res.properties || []);
       } catch (err) {
         console.error("Failed to load properties:", err);

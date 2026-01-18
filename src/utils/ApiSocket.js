@@ -1,14 +1,30 @@
 // src/utils/ApiSocket.js
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://campushub4293.pythonanywhere.com";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "https://campushub4293.pythonanywhere.com";
 
 // ================================
 // CSRF token helper
 // ================================
-function getCookie(name) {
+function getCsrfToken() {
+  // 1️⃣ Try localStorage first (authoritative source)
+  try {
+    const raw = localStorage.getItem("auth_user");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.csrf_token) {
+        return parsed.csrf_token;
+      }
+    }
+  } catch (err) {
+    console.warn("[API DEBUG] Failed to parse auth_user from localStorage", err);
+  }
+
+  // 2️⃣ Fallback to cookie
   const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
+  const parts = value.split(`; csrf_token=`);
   if (parts.length === 2) return parts.pop().split(";").shift();
+
   return null;
 }
 
@@ -17,6 +33,7 @@ function getCookie(name) {
 // ================================
 const handleResponse = async (res) => {
   console.log("[API DEBUG] Response Status:", res.status);
+
   const data = await res.json().catch(() => ({}));
   console.log("[API DEBUG] Response Data:", data);
 
@@ -43,16 +60,22 @@ const handleResponse = async (res) => {
 // ================================
 async function apiRequest(path, options = {}) {
   const method = (options.method || "GET").toUpperCase();
-  const isFormData = options.isFormData || false;
 
-  // ✅ Always read the CSRF token at request time
-  const csrfToken = getCookie("csrf_token");
+  // 🔥 AUTO detect FormData (no flags, no bugs)
+  const isFormData = options.body instanceof FormData;
+
+  // ✅ Always read CSRF token at request time
+  const csrfToken = getCsrfToken();
   console.log("[API DEBUG] CSRF Token at request:", csrfToken);
 
   const headers = {
-    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
   };
+
+  // ✅ Only set JSON header if NOT FormData
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
 
   // Attach CSRF header for mutating requests
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
@@ -68,11 +91,11 @@ async function apiRequest(path, options = {}) {
     method,
     headers,
     credentials: "include", // 🔥 send cookies (JWT + CSRF)
-    body:
-      options.body &&
-      !(isFormData && options.body instanceof FormData)
-        ? JSON.stringify(options.body)
-        : options.body,
+    body: options.body
+      ? isFormData
+        ? options.body
+        : JSON.stringify(options.body)
+      : undefined,
   };
 
   console.log("[API DEBUG] Fetch Options:", fetchOptions);
@@ -90,11 +113,20 @@ async function apiRequest(path, options = {}) {
 // Public API helpers
 // ================================
 export const ApiSocket = {
-  get: (path, options = {}) => apiRequest(path, { method: "GET", ...options }),
-  post: (path, body, options = {}) => apiRequest(path, { method: "POST", body, ...options }),
-  put: (path, body, options = {}) => apiRequest(path, { method: "PUT", body, ...options }),
-  patch: (path, body, options = {}) => apiRequest(path, { method: "PATCH", body, ...options }),
-  delete: (path, body = null, options = {}) => apiRequest(path, { method: "DELETE", body, ...options }),
+  get: (path, options = {}) =>
+    apiRequest(path, { method: "GET", ...options }),
+
+  post: (path, body, options = {}) =>
+    apiRequest(path, { method: "POST", body, ...options }),
+
+  put: (path, body, options = {}) =>
+    apiRequest(path, { method: "PUT", body, ...options }),
+
+  patch: (path, body, options = {}) =>
+    apiRequest(path, { method: "PATCH", body, ...options }),
+
+  delete: (path, body = null, options = {}) =>
+    apiRequest(path, { method: "DELETE", body, ...options }),
 };
 
 export default ApiSocket;
