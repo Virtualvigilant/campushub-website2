@@ -22,18 +22,20 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
   const [price, setPrice] = useState("");
   const [images, setImages] = useState([]);
 
-  // ✅ NEW FIELDS
+  // ✅ New fields
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
   const [availabilityDate, setAvailabilityDate] = useState("");
   const [timeline, setTimeline] = useState("monthly");
+  const [roomSize, setRoomSize] = useState("");
+  const [maxOccupants, setMaxOccupants] = useState("");
+  const [allAmenities, setAllAmenities] = useState([]); // fetched from backend
+  const [selectedAmenities, setSelectedAmenities] = useState([]); // checked by user
 
-  // ✅ Deposits as dynamic key/value list
   const [deposits, setDeposits] = useState([{ key: "", value: "" }]);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch landlord properties
+  // Fetch landlord properties & amenities
   useEffect(() => {
     if (!open) return;
 
@@ -41,28 +43,22 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
       try {
         const res = await ApiSocket.get("/landlord/get_properties");
         setProperties(res.properties || []);
+        setAllAmenities(res.amenities || []);
         if (res.properties?.[0]) setPropertyId(res.properties[0].property_id);
       } catch (err) {
-        console.error("Failed to load properties:", err);
+        console.error("Failed to load properties or amenities:", err);
       }
     };
 
     fetchProperties();
   }, [open]);
 
-  
-
   // --------------------
   // Deposits helpers
   // --------------------
-  const addDepositRow = () => {
-    setDeposits([...deposits, { key: "", value: "" }]);
-  };
-
-  const removeDepositRow = (index) => {
+  const addDepositRow = () => setDeposits([...deposits, { key: "", value: "" }]);
+  const removeDepositRow = (index) =>
     setDeposits(deposits.filter((_, i) => i !== index));
-  };
-
   const updateDeposit = (index, field, value) => {
     const updated = [...deposits];
     updated[index][field] = value;
@@ -72,19 +68,28 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
   const buildDepositsObject = () => {
     const obj = {};
     deposits.forEach((d) => {
-      if (d.key && d.value) {
-        obj[d.key] = d.value;
-      }
+      if (d.key && d.value) obj[d.key] = d.value;
     });
     return obj;
   };
 
+  // --------------------
+  // Availability logic
+  // --------------------
   useEffect(() => {
-  if (availabilityStatus === "available") {
-    setAvailabilityDate("");
-  }
-}, [availabilityStatus]);
+    if (availabilityStatus === "available") setAvailabilityDate("");
+  }, [availabilityStatus]);
 
+  // --------------------
+  // Amenities helpers
+  // --------------------
+  const toggleAmenity = (amenityKey) => {
+    if (selectedAmenities.includes(amenityKey)) {
+      setSelectedAmenities(selectedAmenities.filter((k) => k !== amenityKey));
+    } else {
+      setSelectedAmenities([...selectedAmenities, amenityKey]);
+    }
+  };
 
   // --------------------
   // Handle submit
@@ -102,6 +107,11 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
       return;
     }
 
+    if (!roomSize || !maxOccupants) {
+      setError("Please provide room size and maximum occupants");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("listing_name", listingName);
     formData.append("listing_description", listingDescription);
@@ -109,22 +119,24 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
     formData.append("price", parseFloat(price));
     formData.append("property_id", propertyId);
 
-    // ✅ New fields
+    // New fields
     formData.append("availability_status", availabilityStatus);
     formData.append("availability_date", availabilityDate || null);
     formData.append("timeline", timeline);
+    formData.append("room_size", roomSize);
+    formData.append("max_occupants", maxOccupants);
 
-    // ✅ Deposits JSON
-    const depositsObj = buildDepositsObject();
-    formData.append("deposits", JSON.stringify(depositsObj));
+    // Amenities JSON
+    formData.append("amenities", JSON.stringify(selectedAmenities));
 
-    if (availabilityStatus === "occupied" && !availabilityDate) {
+    // Deposits JSON
+    formData.append("deposits", JSON.stringify(buildDepositsObject()));
+
+    if (availabilityStatus === "rented" && !availabilityDate) {
       setError("Please select when the listing will be available.");
       return;
     }
 
-
-    // Images
     images.forEach((img) => formData.append("product_images", img));
 
     try {
@@ -144,27 +156,23 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CardContent className="p-6 space-y-4">
           {/* Header */}
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">Add New Listing</h2>
-            <button onClick={onClose}>
-              <X className="w-5 h-5" />
-            </button>
+            <button onClick={onClose}><X className="w-5 h-5" /></button>
           </div>
 
           {error && (
             <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</div>
           )}
 
-          {/* Name */}
+          {/* Name & Description */}
           <Input placeholder="Listing name" value={listingName} onChange={(e) => setListingName(e.target.value)} />
-
-          {/* Description */}
           <Textarea placeholder="Description" value={listingDescription} onChange={(e) => setListingDescription(e.target.value)} />
 
-          {/* Property */}
+          {/* Property selection */}
           <div className="space-y-1">
             {properties.map((prop) => (
               <label key={prop.property_id} className="flex items-center gap-2">
@@ -178,7 +186,7 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
             ))}
           </div>
 
-          {/* Type */}
+          {/* Type & Price */}
           <Select value={listingType} onValueChange={setListingType}>
             <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
             <SelectContent>
@@ -187,8 +195,6 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
               <SelectItem value="hostel">Hostel</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Price */}
           <Input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
 
           {/* Availability */}
@@ -199,19 +205,14 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
               <SelectItem value="rented">Rented</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Availability date */}
           {availabilityStatus === "rented" && (
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Available From</label>
             <Input
               type="date"
               value={availabilityDate}
               onChange={(e) => setAvailabilityDate(e.target.value)}
               min={new Date().toISOString().split("T")[0]}
             />
-          </div>
-        )}
+          )}
 
           {/* Timeline */}
           <Select value={timeline} onValueChange={setTimeline}>
@@ -224,28 +225,41 @@ export default function AddListingModal({ open, onClose, onSuccess }) {
             </SelectContent>
           </Select>
 
+          {/* Room Size & Max Occupants */}
+          <div className="flex gap-2">
+            <Input placeholder="Room size (e.g., 18 sqm)" value={roomSize} onChange={(e) => setRoomSize(e.target.value)} />
+            <Input type="number" placeholder="Max occupants" value={maxOccupants} onChange={(e) => setMaxOccupants(e.target.value)} />
+          </div>
+
+          {/* Amenities as checkboxes */}
+          <div className="space-y-2 border p-3 rounded">
+            <div className="font-medium">Amenities</div>
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+              {allAmenities.map((a) => (
+                <label key={a.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes(a.amenity_key)}
+                    onChange={() => toggleAmenity(a.amenity_key)}
+                  />
+                  {a.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Deposits */}
           <div className="space-y-2 border p-3 rounded">
             <div className="font-medium">Deposits (Key / Value)</div>
-
             {deposits.map((dep, index) => (
               <div key={index} className="flex gap-2">
-                <Input
-                  placeholder="e.g. security"
-                  value={dep.key}
-                  onChange={(e) => updateDeposit(index, "key", e.target.value)}
-                />
-                <Input
-                  placeholder="e.g. 5000"
-                  value={dep.value}
-                  onChange={(e) => updateDeposit(index, "value", e.target.value)}
-                />
+                <Input placeholder="e.g. security" value={dep.key} onChange={(e) => updateDeposit(index, "key", e.target.value)} />
+                <Input placeholder="e.g. 5000" value={dep.value} onChange={(e) => updateDeposit(index, "value", e.target.value)} />
                 <Button variant="ghost" onClick={() => removeDepositRow(index)}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             ))}
-
             <Button type="button" variant="outline" onClick={addDepositRow} className="w-full gap-2">
               <Plus className="w-4 h-4" /> Add Deposit Field
             </Button>

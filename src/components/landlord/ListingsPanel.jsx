@@ -199,7 +199,7 @@ export default function LandlordListings() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-semibold text-lg">{l.name}</p>
-                          <p className="text-sm text-muted-foreground">{l.description}</p>
+                          {/* <p className="text-sm text-muted-foreground">{l.description}</p> */}
                           <p className="text-xs text-muted-foreground capitalize">
                             Type: {l.type}
                           </p>

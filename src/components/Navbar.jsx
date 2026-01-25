@@ -2,18 +2,22 @@ import { Link, useLocation } from "wouter";
 // import { Button } from "./components/ui/button";
 import { Button } from "./ui/button";
 
-import { Home, Search, Building2, User, Menu, X } from "lucide-react";
+import { Home, Search, Building2, User, Menu, X, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/listings", label: "Browse Rooms", icon: Search },
     { href: "/landlord", label: "For Landlords", icon: Building2 },
   ];
+  const { user, logout } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
@@ -43,18 +47,51 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/signin">
-              <Button variant="ghost" data-testid="button-login">
-                Log In
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button data-testid="button-signup">
-                Sign Up
-              </Button>
-            </Link>
+          <div className="hidden md:flex items-center gap-3 relative">
+            {!user ? (
+              <>
+                <Link href="/signin">
+                  <Button variant="ghost">Log In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button>Sign Up</Button>
+                </Link>
+              </>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
+                >
+                  {user.username?.[0]?.toUpperCase() || "U"}
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
+                    <Link href="/profile">
+                      <button className="w-full text-left px-4 py-3 hover:bg-muted flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Profile
+                      </button>
+                    </Link>
+
+                    <button
+                      onClick={() => {
+                        setProfileOpen(false);
+                        logout();
+                      }}
+
+                      className="w-full text-left px-4 py-3 hover:bg-muted flex items-center gap-2 text-red-500"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
 
           <button
             className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
@@ -82,17 +119,40 @@ export function Navbar() {
               </Link>
             ))}
             <div className="pt-4 border-t border-border/50 space-y-2">
-              <Link href="/signin">
-                <Button variant="outline" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                  Log In
+            {!user ? (
+              <>
+                <Link href="/signin">
+                  <Button variant="outline" className="w-full">Log In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="w-full">Sign Up</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/profile">
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <User className="w-4 h-4" />
+                    Profile
+                  </Button>
+                </Link>
+
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start gap-2"
+                  onClick={() => {
+                  setProfileOpen(false);
+                  logout();
+                }}
+
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
                 </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
+              </>
+            )}
+          </div>
+
           </div>
         </div>
       )}

@@ -145,6 +145,11 @@ const mpesaSignup = async (payload) => {
       setCheckoutId(res.checkout_request_id)
       return true;
     }
+    else if (res?.status === "paid") {
+        setAuthStatus(AUTH.OTP_REQUIRED);
+        setPendingEmail(res.email);
+        return true;
+      }
   } catch (err) {
     console.error("[Auth][Mpesa] ERROR:", err);
     setAuthStatus(AUTH.UNAUTHENTICATED);

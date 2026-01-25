@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RoomCard } from "@/components/RoomCard";
+import LoadingScreen from "@/pages/Auth/LoadingScreen"
+import { ApiSocket} from "@/utils/ApiSocket";
 import { 
   Search, 
   SlidersHorizontal, 
@@ -19,99 +21,14 @@ import {
   ChevronDown
 } from "lucide-react";
 
-const allRooms = [
-  {
-    id: "1",
-    title: "Modern Bedsitter Near University",
-    type: "Bedsitter",
-    price: 8500,
-    location: "Langata Road",
-    distance: "500m",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600",
-    amenities: ["WiFi", "Water", "Electricity"],
-    verified: true,
-    rating: 4.8,
-    reviews: 24,
-  },
-  {
-    id: "2",
-    title: "Spacious Single Room with Balcony",
-    type: "Single Room",
-    price: 6000,
-    location: "Kibera Drive",
-    distance: "800m",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600",
-    amenities: ["Water", "Electricity"],
-    verified: true,
-    rating: 4.5,
-    reviews: 18,
-  },
-  {
-    id: "3",
-    title: "Cozy 1-Bedroom Apartment",
-    type: "1 Bedroom",
-    price: 15000,
-    location: "Nairobi West",
-    distance: "1.2km",
-    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600",
-    amenities: ["WiFi", "Water", "Electricity"],
-    verified: false,
-    rating: 4.2,
-    reviews: 12,
-  },
-  {
-    id: "4",
-    title: "Student Hostel - Shared Room",
-    type: "Shared",
-    price: 4500,
-    location: "University Way",
-    distance: "200m",
-    image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600",
-    amenities: ["WiFi", "Water"],
-    verified: true,
-    rating: 4.0,
-    reviews: 45,
-  },
-  {
-    id: "5",
-    title: "Furnished Studio Apartment",
-    type: "Studio",
-    price: 12000,
-    location: "Kilimani",
-    distance: "2km",
-    image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600",
-    amenities: ["WiFi", "Water", "Electricity"],
-    verified: true,
-    rating: 4.7,
-    reviews: 31,
-  },
-  {
-    id: "6",
-    title: "Budget Single Room",
-    type: "Single Room",
-    price: 5000,
-    location: "South C",
-    distance: "1.5km",
-    image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600",
-    amenities: ["Water", "Electricity"],
-    verified: false,
-    rating: 3.8,
-    reviews: 8,
-  },
-  {
-    id: "7",
-    title: "Premium 2-Bedroom with Study",
-    type: "2 Bedroom",
-    price: 25000,
-    location: "Westlands",
-    distance: "3km",
-    image: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?w=600",
-    amenities: ["WiFi", "Water", "Electricity"],
-    verified: true,
-    rating: 4.9,
-    reviews: 15,
-  },
-  {
+
+
+const roomTypes = ["All Types", "Single Room", "Bedsitter", "Studio", "1 Bedroom", "2 Bedroom", "Shared"];
+const distances = ["Any Distance", "< 500m", "< 1km", "< 2km", "< 5km"];
+
+export default function Listings() {
+  const [ allRooms, setAllRooms ] = useState([
+    {
     id: "8",
     title: "Affordable Bedsitter for Students",
     type: "Bedsitter",
@@ -123,21 +40,18 @@ const allRooms = [
     verified: true,
     rating: 4.3,
     reviews: 22,
-  },
-];
-
-const roomTypes = ["All Types", "Single Room", "Bedsitter", "Studio", "1 Bedroom", "2 Bedroom", "Shared"];
-const distances = ["Any Distance", "< 500m", "< 1km", "< 2km", "< 5km"];
-
-export default function Listings() {
+  }
+  ])
   const [searchQuery, setSearchQuery] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 30000]);
+  const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedType, setSelectedType] = useState("All Types");
   const [selectedDistance, setSelectedDistance] = useState("Any Distance");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // removed TypeScript type
   const [sortBy, setSortBy] = useState("recommended");
+
+  
 
   const filteredRooms = allRooms.filter((room) => {
     if (verifiedOnly && !room.verified) return false;
@@ -154,6 +68,110 @@ export default function Listings() {
     verifiedOnly,
     priceRange[0] > 0 || priceRange[1] < 30000,
   ].filter(Boolean).length;
+  
+  const [coordinates, setCoordinates] = useState({ latitude: 0, longitude: 0 });
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  const [ loading, setLoading ] = useState(false)
+  const [ error, setError ] = useState(null)
+
+
+  function formatDistance(meters) {
+  const m = Number(meters);
+
+  if (!Number.isFinite(m) || m < 0) return null;
+
+  if (m < 1000) {
+    return `${Math.round(m)} m`;
+  }
+
+  const km = m / 1000;
+
+  // show up to 2 decimals, but trim trailing zeros
+  const formatted = km.toFixed(2).replace(/\.?0+$/, "");
+
+  return `${formatted} km`;
+}
+
+
+useEffect(() => {
+  if (coordinates.latitude && coordinates.longitude) {
+    const fetchListings = async () => {
+      try {
+        setLoading(true);
+
+        const response = await ApiSocket.post("/comrade/get_listings", {
+          coordinates: coordinates
+        });
+
+        console.log("Fetched listings RAW:", response);
+
+        const mapped = (response.listings || []).map((l) => ({
+          id: l.listing_id,
+          title: l.listing_name,
+
+          type: l.listing_type
+            ? l.listing_type.charAt(0).toUpperCase() + l.listing_type.slice(1)
+            : "Unknown",
+
+          price: Number(l.price),
+
+          location: l.location?.address || "Unknown",
+
+          distance: formatDistance(l.distance),
+
+          image: l.images?.[0] || "/placeholder.jpg",
+
+          amenities: Array.isArray(l.amenities)
+            ? l.amenities.map(a => a.name || a.label || String(a))
+            : [],
+
+          verified: Boolean(l.verified),
+
+          rating: Number(l.rating?.average_rating || 0),
+          reviews: Number(l.rating?.num_ratings || 0),
+        }));
+
+
+        setAllRooms(mapped);
+        setError(null);
+
+      } catch (error) {
+        setError(error.message || "Unknown error");
+        console.error("Failed to fetch listings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }
+}, [coordinates]);
+
+
+ if (loading || (!coordinates.latitude && !coordinates.longitude)) {
+  return <LoadingScreen />;
+}
+
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -238,7 +256,7 @@ export default function Listings() {
                       setSelectedType("All Types");
                       setSelectedDistance("Any Distance");
                       setVerifiedOnly(false);
-                      setPriceRange([0, 30000]);
+                      setPriceRange([0, 1000000]);
                     }}
                     data-testid="button-clear-filters"
                   >
@@ -262,7 +280,7 @@ export default function Listings() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-sm font-medium">Distance from Campus</label>
+                    <label className="text-sm font-medium">Distance from campus</label>
                     <Select value={selectedDistance} onValueChange={setSelectedDistance}>
                       <SelectTrigger data-testid="select-distance">
                         <SelectValue />
@@ -283,7 +301,7 @@ export default function Listings() {
                       value={priceRange}
                       onValueChange={setPriceRange}
                       min={0}
-                      max={30000}
+                      max={100000}
                       step={500}
                       className="mt-6"
                       data-testid="slider-price"

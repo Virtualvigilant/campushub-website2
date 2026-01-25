@@ -1,9 +1,16 @@
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "wouter";
 
 export default function DashboardRightSidebar() {
   const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    setLocation("/"); // ✅ redirect to home after logout
+  };
 
   return (
     <aside className="h-full p-4 flex flex-col justify-between border-l border-border bg-card">
@@ -18,9 +25,9 @@ export default function DashboardRightSidebar() {
         </div>
       </div>
 
-      {/* Logout button */}
+      {/* Logout buttons */}
       <Button
-        onClick={logout}
+        onClick={handleLogout}
         variant="ghost"
         className="justify-start gap-2 text-destructive md:hidden"
       >
@@ -28,9 +35,8 @@ export default function DashboardRightSidebar() {
         Logout
       </Button>
 
-      {/* On larger screens, the logout can also appear elsewhere */}
       <Button
-        onClick={logout}
+        onClick={handleLogout}
         variant="ghost"
         className="justify-start gap-2 text-destructive hidden md:flex mt-6"
       >

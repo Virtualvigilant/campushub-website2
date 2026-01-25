@@ -3,17 +3,32 @@ import React from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { MapPin, Wifi, Droplets, Zap, Shield, Star, Heart } from "lucide-react";
+// import { MapPin, Wifi, Droplets, Zap, Shield, Star, Heart } from "lucide-react";
 import { Link } from "wouter";
+import {
+  Wifi, Droplets, Zap, Shield, Car, Camera, Fence, Home, Bath, Heart, MapPin, Star,
+  Sofa, Leaf, Trash2, Dog, CigaretteOff, Sun, BatteryCharging
+} from "lucide-react";
 
 const amenityIcons = {
   wifi: <Wifi className="w-3.5 h-3.5" />,
-  water: <Droplets className="w-3.5 h-3.5" />,
-  electricity: <Zap className="w-3.5 h-3.5" />,
+  borehole: <Droplets className="w-3.5 h-3.5" />,
+  city_water: <Droplets className="w-3.5 h-3.5" />,
+  prepaid_power: <Zap className="w-3.5 h-3.5" />,
+  backup_power: <BatteryCharging className="w-3.5 h-3.5" />,
+  solar_hot_water: <Sun className="w-3.5 h-3.5" />,
+
+  security: <Shield className="w-3.5 h-3.5" />,
+  cctv: <Camera className="w-3.5 h-3.5" />,
+  parking: <Car className="w-3.5 h-3.5" />,
+
+  pets_allowed: <Dog className="w-3.5 h-3.5" />,
+  no_smoking: <CigaretteOff className="w-3.5 h-3.5" />
 };
 
 export function RoomCard({
   id,
+  listing_id,
   title,
   type,
   price,
@@ -60,7 +75,7 @@ export function RoomCard({
           <div>
             <p className="text-white/80 text-sm flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
-              {distance} from campus
+              {distance} from your current position
             </p>
           </div>
           {rating && (
@@ -101,11 +116,10 @@ export function RoomCard({
             <span className="text-xl font-bold text-primary">KES {price.toLocaleString()}</span>
             <span className="text-sm text-muted-foreground">/month</span>
           </div>
-          <Link href={`/room/${id}`}>
-            <Button size="sm" data-testid={`button-view-${id}`}>
-              View Details
-            </Button>
-          </Link>
+          <Link href={`/room?room=${id}`}>
+  <Button size="sm">View Details</Button>
+</Link>
+
         </div>
       </CardContent>
     </Card>

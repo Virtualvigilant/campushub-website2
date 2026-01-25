@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Users, Building2, Briefcase, ShieldCheck } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 const roles = [
   { key: "comrade", label: "Comrade", icon: Users },
@@ -21,11 +22,13 @@ export default function SignUp() {
   const [role, setRole] = useState("comrade");
   const [step, setStep] = useState("form"); // form | otp
   const [form, setForm] = useState({
+    role: "comrade",
     username: "",
     email: "",
     password: "",
   });
   const [otp, setOtp] = useState("");
+  const { signup, error } = useAuth();
 
   function handleRoleSelect(r) {
     if (r !== "comrade") {
@@ -35,13 +38,13 @@ export default function SignUp() {
     setRole(r);
   }
 
-  function handleSubmit(e) {
+ async function handleSubmit(e) {
     e.preventDefault();
-
-    console.log("SIGNUP DATA:", { role, ...form });
+    await signup(form);
+    console.log("SUBMITTING SIGNUP FORM", form);
 
     // MOCK: pretend OTP was sent
-    setStep("otp");
+    // setStep("otp");
   }
 
   function handleVerifyOtp(e) {
@@ -89,6 +92,12 @@ export default function SignUp() {
           </CardHeader>
 
           <CardContent>
+
+                          {error && (
+              <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
+                {error}
+              </div>
+            )}
             {step === "form" ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>

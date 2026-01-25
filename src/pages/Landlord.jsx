@@ -25,88 +25,10 @@ import { useRef } from "react";
 import { ApiSocket} from "@/utils/ApiSocket";
 
 
-// const plans = [
-//   {
-//     name: "Free",
-//     price: 0,
-//     period: "month",
-//     description: "Get started and try CompassHub with basic features",
-//     features: [
-//       "List 1 property",
-//       "Limited visibility in search",
-//       "Receive student inquiries",
-//       "Email notifications",
-//     ],
-//     notIncluded: [
-//       "Priority listing",
-//       "Verification badge",
-//       "Analytics dashboard",
-//       "SMS notifications",
-//       "Featured placement",
-//     ],
-//     popular: false,
-//   },
-//   {
-//     name: "Basic",
-//     price: 300,
-//     period: "month",
-//     description: "Perfect for landlords with 1-2 properties",
-//     features: [
-//       "List up to 2 properties",
-//       "Basic visibility in search",
-//       "Receive student inquiries",
-//       "Email notifications",
-//     ],
-//     notIncluded: [
-//       "Priority listing",
-//       "Verification badge",
-//       "Analytics dashboard",
-//     ],
-//     popular: false,
-//   },
-//   {
-//     name: "Premium",
-//     price: 700,
-//     period: "month",
-//     description: "Best value for growing landlords",
-//     features: [
-//       "List up to 5 properties",
-//       "Priority visibility in search",
-//       "Receive student inquiries",
-//       "Email & SMS notifications",
-//       "Basic analytics",
-//       "Featured in recommendations",
-//     ],
-//     notIncluded: [
-//       "Verification badge",
-//     ],
-//     popular: true,
-//   },
-//   {
-//     name: "Pro",
-//     price: 1500,
-//     period: "month",
-//     description: "For professional property managers",
-//     features: [
-//       "Unlimited property listings",
-//       "Top ranking in search results",
-//       "Verification badge included",
-//       "Priority support",
-//       "Advanced analytics dashboard",
-//       "Featured homepage placement",
-//       "Bulk listing tools",
-//       "API access",
-//     ],
-//     notIncluded: [],
-//     popular: false,
-//   },
-// ];
-
-
 const benefits = [
   {
     icon: Users,
-    title: "Access 15,000+ Students",
+    title: "Access 0+ Students",
     description: "Connect directly with students actively searching for accommodation near their campus.",
   },
   {
@@ -210,7 +132,7 @@ export default function Landlord() {
             </h1>
             
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join CampusHub and get direct access to 15,000+ students actively searching for 
+              Join CampusHub and get direct access to more students actively searching for 
               off-campus accommodation. Fill your vacancies faster with verified listings.
             </p>
 
@@ -237,7 +159,7 @@ export default function Landlord() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary" />
-                500+ active landlords
+                0+ active landlords
               </div>
             </div>
           </div>
@@ -387,7 +309,7 @@ export default function Landlord() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trusted by 500+ Landlords
+              Trusted by 0+ Landlords
             </h2>
           </div>
 

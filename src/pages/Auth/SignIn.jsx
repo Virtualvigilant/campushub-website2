@@ -32,7 +32,12 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login (form)
+    const ok = await login(form);
+    if (ok) {
+      setLocation("/auth-redirect");
+    }
+
+    
 
     // MOCK LOGIN
     console.log("LOGIN DATA:", { role, ...form });
@@ -40,6 +45,7 @@ export default function SignIn() {
     // alert("login successful!");
     // setLocation("/dashboard");
   }
+  
 
   return (
     <div className="min-h-screen bg-background">

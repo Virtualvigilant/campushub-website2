@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RoomCard } from "@/components/RoomCard";
+import LoadingScreen from "@/pages/Auth/LoadingScreen"
+import { ApiSocket} from "@/utils/ApiSocket";
 import { 
   Search, 
   Shield, 
@@ -19,13 +21,66 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import heroImage from "@assets/generated_images/student_housing_hero_image.png";
+import { useEffect } from "react";
+import hero1 from "@assets/generated_images/hero1.jpeg";
+import hero2 from "@assets/generated_images/hero2.jpeg";
+import hero3 from "@assets/generated_images/hero3.jpeg";
 // import ApiSocket from "@/utils/ApiSocket";
 import { useState } from "react";
 
-
-
-const featuredRooms = [
+const features = [
   {
+    icon: Shield,
+    title: "Verified Listings",
+    description: "Every property is physically inspected by our team for safety, cleanliness, and quality.",
+  },
+  {
+    icon: MapPin,
+    title: "Campus-Centric",
+    description: "Find rooms based on distance from your university. No more long commutes to lectures.",
+  },
+  {
+    icon: Clock,
+    title: "Save Time",
+    description: "Browse hundreds of verified rooms online instead of wandering around neighborhoods.",
+  },
+  {
+    icon: Star,
+    title: "Trusted Reviews",
+    description: "Read honest reviews from fellow students who've lived in these properties.",
+  },
+];
+
+const stats = [
+  { value: "0+", label: "Verified Rooms" },
+  { value: "0+", label: "Happy Students" },
+  { value: "0+", label: "Trusted Landlords" },
+  { value: "0+", label: "Partner Campuses" },
+];
+
+const steps = [
+  { step: 1, title: "Create Account", description: "Sign up for free in under 2 minutes" },
+  { step: 2, title: "Set Preferences", description: "Tell us your budget, room type & preferred distance" },
+  { step: 3, title: "Browse & Book", description: "View verified listings and schedule viewings" },
+  { step: 4, title: "Move In", description: "Chat with landlords, reserve, and move into your new home" },
+];
+
+const heroImages = [hero1, hero2, hero3];
+
+
+// const [data, setData] = useState("");
+
+// run useeffect to connect to socket on mount
+
+// useEffect(() => {
+//   ApiSocket.get("/comrade/get_listings").then(console.log);
+// }, []);
+
+
+export default function Home() {
+   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+   const [featuredRooms, setFeaturedRooms] = useState([
+      {
     id: "1",
     title: "Modern Bedsitter Near University",
     type: "Bedsitter",
@@ -64,71 +119,136 @@ const featuredRooms = [
     rating: 4.2,
     reviews: 12,
   },
-];
+   ])
 
-const features = [
-  {
-    icon: Shield,
-    title: "Verified Listings",
-    description: "Every property is physically inspected by our team for safety, cleanliness, and quality.",
-  },
-  {
-    icon: MapPin,
-    title: "Campus-Centric",
-    description: "Find rooms based on distance from your university. No more long commutes to lectures.",
-  },
-  {
-    icon: Clock,
-    title: "Save Time",
-    description: "Browse hundreds of verified rooms online instead of wandering around neighborhoods.",
-  },
-  {
-    icon: Star,
-    title: "Trusted Reviews",
-    description: "Read honest reviews from fellow students who've lived in these properties.",
-  },
-];
+   useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 120000); // 2 minutes = 120,000 ms
 
-const stats = [
-  { value: "2,500+", label: "Verified Rooms" },
-  { value: "15,000+", label: "Happy Students" },
-  { value: "500+", label: "Trusted Landlords" },
-  { value: "12", label: "Partner Campuses" },
-];
+    return () => clearInterval(interval);
+  }, []);
 
-const steps = [
-  { step: 1, title: "Create Account", description: "Sign up for free in under 2 minutes" },
-  { step: 2, title: "Set Preferences", description: "Tell us your budget, room type & preferred distance" },
-  { step: 3, title: "Browse & Book", description: "View verified listings and schedule viewings" },
-  { step: 4, title: "Move In", description: "Chat with landlords, reserve, and move into your new home" },
-];
+  const [coordinates, setCoordinates] = useState({ latitude: 0, longitude: 0 });
 
-// const [data, setData] = useState("");
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
 
-// run useeffect to connect to socket on mount
-
-// useEffect(() => {
-//   ApiSocket.get("/comrade/get_listings").then(console.log);
-// }, []);
+  const [ loading, setLoading ] = useState(false)
+  const [ error, setError ] = useState(null)
 
 
-export default function Home() {
+  function formatDistance(meters) {
+  const m = Number(meters);
+
+  if (!Number.isFinite(m) || m < 0) return null;
+
+  if (m < 1000) {
+    return `${Math.round(m)} m`;
+  }
+
+  const km = m / 1000;
+
+  // show up to 2 decimals, but trim trailing zeros
+  const formatted = km.toFixed(2).replace(/\.?0+$/, "");
+
+  return `${formatted} km`;
+}
+
+
+useEffect(() => {
+  if (coordinates.latitude && coordinates.longitude) {
+    const fetchListings = async () => {
+      try {
+        setLoading(true);
+
+        const response = await ApiSocket.post("/comrade/get_listings", {
+          coordinates: coordinates
+        });
+
+        console.log("Fetched listings RAW:", response);
+
+        const mapped = (response.listings || []).map((l) => ({
+          id: l.listing_id,
+          title: l.listing_name,
+
+          type: l.listing_type
+            ? l.listing_type.charAt(0).toUpperCase() + l.listing_type.slice(1)
+            : "Unknown",
+
+          price: Number(l.price),
+
+          location: l.location?.address || "Unknown",
+
+          distance: formatDistance(l.distance),
+
+          image: l.images?.[0] || "/placeholder.jpg",
+
+          amenities: Array.isArray(l.amenities)
+            ? l.amenities.map(a => a.name || a.label || String(a))
+            : [],
+
+          verified: Boolean(l.verified),
+
+          rating: Number(l.rating?.average_rating || 0),
+          reviews: Number(l.rating?.num_ratings || 0),
+        }));
+
+
+        setFeaturedRooms(mapped);
+        setError(null);
+
+      } catch (error) {
+        setError(error.message || "Unknown error");
+        console.error("Failed to fetch listings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }
+}, [coordinates]);
+
+
+ if (loading || (!coordinates.latitude && !coordinates.longitude)) {
+  return <LoadingScreen />;
+}
+
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
       <section className="relative pt-16 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
+       <div 
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+          style={{ backgroundImage: `url(${heroImages[currentHeroIndex]})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/60" />
+
+        <div className="absolute inset-0 bg-linear-to-r from-background via-background/95 to-background/60" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="max-w-2xl space-y-6">
             <Badge variant="secondary" className="gap-2 px-4 py-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              Trusted by 15,000+ students
+              Trusted by 0+ students
             </Badge>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
@@ -284,7 +404,7 @@ export default function Home() {
               </p>
               <ul className="space-y-3">
                 {[
-                  "Reach 15,000+ students actively searching",
+                  "Reach more students actively searching",
                   "Get verified for increased trust",
                   "Manage bookings & inquiries easily",
                   "Flexible subscription plans from KES 300/month",

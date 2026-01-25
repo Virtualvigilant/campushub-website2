@@ -50,7 +50,7 @@ export default function LandlordSignUp() {
         setPlanError(err.message || "Unknown error");
       } finally {
         setLoading(false);
-      } 7
+      }
     };
 
     fetchPlan();

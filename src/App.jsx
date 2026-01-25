@@ -19,6 +19,8 @@ import { useAuth } from "./contexts/AuthContext"
 import LoadingScreen from "./pages/Auth/LoadingScreen";
 import RoleRouter from "./RoleRouter";
 import MpesaScreen from "./pages/Auth/MpesaScreen";
+import Profile from "./pages/comrade/Profile";
+import LandlordDashboard from "./pages/LandlordDashboard"
 
 
 
@@ -28,15 +30,35 @@ function Router() {
 
   //if authenticated
 
-  if (authStatus === "authenticated") {
-    return (
-      <Switch>
-        <Route>
-          <RoleRouter />
-        </Route>
-      </Switch>
-    );
-  }
+if (authStatus === "authenticated") {
+  return (
+    <Switch>
+      {/* Entry redirect */}
+      <Route path="/auth-redirect" component={RoleRouter} />
+
+      {/* Normal app pages */}
+      <Route path="/" component={Home} />
+      <Route path="/listings" component={Listings} />
+      <Route path="/room" component={RoomDetail} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/landlord" component={LandlordDashboard} />
+      <Route path="/landlord-dashboard" component={LandlordDashboard} />
+
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+  // if (authStatus === "authenticated") {
+  //   return (
+  //     <Switch>
+  //       <Route>
+  //         <RoleRouter />
+  //       </Route>
+  //     </Switch>
+  //   );
+  // }
+
 
 
 
@@ -80,8 +102,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/listings" component={Listings} />
-      <Route path="/room/:id" component={RoomDetail} />
+      <Route path="/room" component={RoomDetail} />
       <Route path="/landlord" component={Landlord} />
+      <Route path="/profile" component={Profile} />
 
       <Route path="/landlord-signup">
         <LandlordSignUp />
