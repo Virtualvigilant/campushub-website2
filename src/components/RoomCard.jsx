@@ -46,11 +46,24 @@ export function RoomCard({
       data-testid={`card-room-${id}`}
     >
       <div className="relative aspect-4/3 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{ backgroundImage: `url(${image})` }}
-        />
+        {image ? (
+          <img
+            src={image}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.jpg";
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground text-sm">
+            No image
+          </div>
+        )}
+
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+
         
         <div className="absolute top-3 left-3 flex gap-2">
           {verified && (

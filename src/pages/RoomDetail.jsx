@@ -5,27 +5,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
- import SkeletonLoading from "@/components/SkeletonLoading";
-import { 
-  MapPin, 
-  Shield, 
-  Star, 
-  Heart, 
-  Share2, 
-  Wifi, 
-  Droplets, 
-  Zap, 
-  Car,
-  Users,
-  Ruler,
-  Calendar,
-  MessageCircle,
-  Phone,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Clock
+import SkeletonLoading from "@/components/SkeletonLoading";
+import {
+  MapPin, Shield, Star, Heart, Share2, Wifi, Droplets, Zap, Car, Users,
+  Ruler, Calendar, MessageCircle, Phone, ChevronLeft, ChevronRight,
+  CheckCircle2, Clock,
+
+  BatteryCharging,
+  Sun,
+  Camera,
+  Fence,
+  Lock,
+  ParkingCircle,
+  Bike,
+  Sofa,
+  Boxes,
+  Home,
+  Grid,
+  Layout,
+  Warehouse,
+  ShowerHead,
+  Bath,
+  DoorClosed,
+  WashingMachine,
+  Trash2,
+  Leaf,
+  Building2,
+  BookOpen,
+  Dog,
+  CigaretteOff,
+  GlassWater
 } from "lucide-react";
+
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import ApiSocket from "@/utils/ApiSocket";
@@ -41,13 +52,70 @@ export default function RoomDetail() {
   const [coordinates, setCoordinates] = useState({ latitude: 0, longitude: 0 });
 
   // Map backend amenity keys to icons
-  const iconMap = {
-    wifi: Wifi,
-    cctv: Shield,
-    warden: Shield,
-    pets_allowed: Heart,
-    no_smoking: Zap,
-  };
+const iconMap = {
+  // Utilities
+  wifi: Wifi,
+  fibre: Wifi,
+  borehole: Droplets,
+  city_water: Droplets,
+  water_tank: GlassWater,
+  prepaid_power: Zap,
+  backup_power: BatteryCharging,
+  solar_hot_water: Sun,
+
+  // Security & Access
+  security: Shield,
+  cctv: Camera,
+  gated: Fence,
+  electric_fence: Fence,
+  controlled_access: Lock,
+
+  // Parking
+  parking: Car,
+  private_parking: ParkingCircle,
+  motorbike_parking: Bike,
+
+  // Furniture & Interior
+  furnished: Sofa,
+  semi_furnished: Sofa,
+  wardrobe: Boxes,
+  balcony: Home,
+  tiled_floor: Grid,
+  wood_floor: Layout,
+
+  // Kitchen
+  open_kitchen: Layout,
+  kitchen_cabinets: Warehouse,
+  pantry: Boxes,
+
+  // Bathroom
+  hot_shower: ShowerHead,
+  instant_shower: ShowerHead,
+  bathtub: Bath,
+  separate_toilet: DoorClosed,
+
+  // Outdoor & Utility
+  laundry_area: WashingMachine,
+  drying_area: Sun,
+  garbage: Trash2,
+  garden: Leaf,
+  rooftop: Building2,
+
+  // Building & Shared
+  elevator: Building2,
+  caretaker: Users,
+  shared_kitchen: Users,
+  shared_bathroom: Users,
+  common_room: Users,
+  study_area: BookOpen,
+
+  // Rules
+  pets_allowed: Dog,
+  no_smoking: CigaretteOff,
+
+  // Staff
+  warden: Shield
+};
 
   useEffect(() => {
     if (navigator.geolocation) {

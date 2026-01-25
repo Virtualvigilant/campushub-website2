@@ -11,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { RoomCard } from "@/components/RoomCard";
 import LoadingScreen from "@/pages/Auth/LoadingScreen"
 import { ApiSocket} from "@/utils/ApiSocket";
+import SkeletonLoading from "@/components/SkeletonLoading";
 import { 
   Search, 
   SlidersHorizontal, 
@@ -168,7 +169,7 @@ useEffect(() => {
 
 
  if (loading || (!coordinates.latitude && !coordinates.longitude)) {
-  return <LoadingScreen />;
+  return <SkeletonLoading />;
 }
 
 

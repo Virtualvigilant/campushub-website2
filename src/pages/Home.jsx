@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { RoomCard } from "@/components/RoomCard";
 import LoadingScreen from "@/pages/Auth/LoadingScreen"
 import { ApiSocket} from "@/utils/ApiSocket";
+import SkeletonLoading from "@/components/SkeletonLoading";
 import { 
   Search, 
   Shield, 
@@ -150,7 +151,7 @@ export default function Home() {
     }
   }, []);
 
-  const [ loading, setLoading ] = useState(false)
+  const [ loading, setLoading ] = useState(true)
   const [ error, setError ] = useState(null)
 
 
@@ -184,7 +185,7 @@ useEffect(() => {
 
         console.log("Fetched listings RAW:", response);
 
-        const mapped = (response.listings || []).map((l) => ({
+        const mapped = (response.data?.listings || response.listings || []).map((l) => ({
           id: l.listing_id,
           title: l.listing_name,
 
@@ -198,7 +199,7 @@ useEffect(() => {
 
           distance: formatDistance(l.distance),
 
-          image: l.images?.[0] || "/placeholder.jpg",
+          image: l.images?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600",
 
           amenities: Array.isArray(l.amenities)
             ? l.amenities.map(a => a.name || a.label || String(a))
@@ -228,7 +229,7 @@ useEffect(() => {
 
 
  if (loading || (!coordinates.latitude && !coordinates.longitude)) {
-  return <LoadingScreen />;
+  return <SkeletonLoading />;
 }
 
 
