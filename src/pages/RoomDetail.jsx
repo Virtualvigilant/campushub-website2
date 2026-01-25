@@ -51,6 +51,60 @@ export default function RoomDetail() {
   const roomId = params.get("room");
   const [coordinates, setCoordinates] = useState({ latitude: 0, longitude: 0 });
 
+  const FAVORITES_KEY = "campushub_favorites";
+
+const getLocalFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
+
+const setLocalFavorites = (list) => {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
+};
+
+const isFavoritedLocal = (roomId) => {
+  return getLocalFavorites().includes(roomId);
+};
+
+
+useEffect(() => {
+  if (roomId) {
+    setIsFavorited(isFavoritedLocal(roomId));
+  }
+}, [roomId]);
+
+const toggleFavorite = async () => {
+  const newState = !isFavorited;
+  setIsFavorited(newState); // optimistic UI
+
+  // Always update localStorage
+  let favorites = getLocalFavorites();
+
+  if (newState) {
+    if (!favorites.includes(roomId)) favorites.push(roomId);
+  } else {
+    favorites = favorites.filter(id => id !== roomId);
+  }
+
+  setLocalFavorites(favorites);
+
+  // 🔥 Try backend sync (if logged in)
+  try {
+    await ApiSocket.post("/user/toggle_favorite", {
+      listing_id: roomId,
+      favorited: newState
+    });
+  } catch (err) {
+    console.warn("Backend favorite sync failed, using local only.");
+    // Do NOT rollback UI — keep smooth UX
+  }
+};
+
+
+
   // Map backend amenity keys to icons
 const iconMap = {
   // Utilities
@@ -202,7 +256,7 @@ const iconMap = {
             {/* Left/Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Images & Gallery */}
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-muted">
+              <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-muted">
                 <img 
                   src={roomData.images[currentImage]}
                   alt={roomData.title}
@@ -226,7 +280,7 @@ const iconMap = {
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                       isFavorited ? "bg-red-500 text-white" : "bg-white/90 text-muted-foreground hover:text-red-500"
                     }`}
-                    onClick={() => setIsFavorited(!isFavorited)}
+                    onClick={toggleFavorite}
                   >
                     <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
                   </button>

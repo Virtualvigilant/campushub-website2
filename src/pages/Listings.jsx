@@ -51,6 +51,42 @@ export default function Listings() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // removed TypeScript type
   const [sortBy, setSortBy] = useState("recommended");
+  const [favorites, setFavorites] = useState([]);
+
+  
+
+  const FAVORITES_KEY = "campushub_favorites";
+
+const getLocalFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
+
+const setLocalFavorites = (list) => {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
+};
+
+useEffect(() => {
+  setFavorites(getLocalFavorites());
+}, []);
+
+const toggleFavorite = (roomId) => {
+  setFavorites((prev) => {
+    let updated;
+
+    if (prev.includes(roomId)) {
+      updated = prev.filter((id) => id !== roomId);
+    } else {
+      updated = [...prev, roomId];
+    }
+
+    setLocalFavorites(updated);
+    return updated;
+  });
+};
 
   
 
@@ -91,7 +127,7 @@ export default function Listings() {
     }
   }, []);
 
-  const [ loading, setLoading ] = useState(false)
+  const [ loading, setLoading ] = useState(true)
   const [ error, setError ] = useState(null)
 
 
@@ -168,9 +204,9 @@ useEffect(() => {
 }, [coordinates]);
 
 
- if (loading || (!coordinates.latitude && !coordinates.longitude)) {
-  return <SkeletonLoading />;
-}
+//  if (loading || (!coordinates.latitude && !coordinates.longitude)) {
+//   return <SkeletonLoading />;
+// }
 
 
 
@@ -214,7 +250,7 @@ useEffect(() => {
               </Button>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-12 w-[180px]" data-testid="select-sort">
+                <SelectTrigger className="h-12 w-45" data-testid="select-sort">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -366,40 +402,56 @@ useEffect(() => {
             </div>
           )}
 
-          {filteredRooms.length > 0 ? (
-            <div className={`grid gap-6 ${
-              viewMode === "grid" 
-                ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
-                : "grid-cols-1"
-            }`}>
-              {filteredRooms.map((room) => (
-                <RoomCard key={room.id} {...room} />
-              ))}
-            </div>
-          ) : (
-            <Card className="border-border/50">
-              <CardContent className="py-16 text-center">
-                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your filters or search query
-                </p>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedType("All Types");
-                    setSelectedDistance("Any Distance");
-                    setVerifiedOnly(false);
-                    setPriceRange([0, 30000]);
-                  }}
-                  data-testid="button-reset-search"
-                >
-                  Reset Filters
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+        {loading ? (
+          <div className={`grid gap-6 ${
+            viewMode === "grid" 
+              ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              : "grid-cols-1"
+          }`}>
+            {Array.from({ length: viewMode === "grid" ? 8 : 4 }).map((_, i) => (
+              <SkeletonLoading key={i} />
+            ))}
+          </div>
+        ) : filteredRooms.length > 0 ? (
+          <div className={`grid gap-6 ${
+            viewMode === "grid" 
+              ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              : "grid-cols-1"
+          }`}>
+            {filteredRooms.map((room) => (
+              <RoomCard
+                key={room.id}
+                {...room}
+                isFavorited={favorites.includes(room.id)}
+                onToggleFavorite={() => toggleFavorite(room.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card className="border-border/50">
+            <CardContent className="py-16 text-center">
+              <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
+              <p className="text-muted-foreground mb-4">
+                Try adjusting your filters or search query
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedType("All Types");
+                  setSelectedDistance("Any Distance");
+                  setVerifiedOnly(false);
+                  setPriceRange([0, 30000]);
+                }}
+                data-testid="button-reset-search"
+              >
+                Reset Filters
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
 
           <div className="mt-12 flex justify-center">
             <Button variant="outline" size="lg" className="gap-2" data-testid="button-load-more">

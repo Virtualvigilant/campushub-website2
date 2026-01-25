@@ -69,6 +69,8 @@ const steps = [
 const heroImages = [hero1, hero2, hero3];
 
 
+
+
 // const [data, setData] = useState("");
 
 // run useeffect to connect to socket on mount
@@ -80,6 +82,8 @@ const heroImages = [hero1, hero2, hero3];
 
 export default function Home() {
    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+   const [favorites, setFavorites] = useState([]);
+
    const [featuredRooms, setFeaturedRooms] = useState([
       {
     id: "1",
@@ -121,6 +125,44 @@ export default function Home() {
     reviews: 12,
   },
    ])
+    const FAVORITES_KEY = "campushub_favorites";
+
+      const getLocalFavorites = () => {
+        try {
+          return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        } catch {
+          return [];
+        }
+      };
+
+      const setLocalFavorites = (list) => {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
+      };
+
+
+  useEffect(() => {
+  setFavorites(getLocalFavorites());
+}, []);
+
+const toggleFavorite = (roomId) => {
+  setFavorites((prev) => {
+    let updated;
+
+    if (prev.includes(roomId)) {
+      updated = prev.filter((id) => id !== roomId);
+    } else {
+      updated = [...prev, roomId];
+    }
+
+    setLocalFavorites(updated);
+    return updated;
+  });
+};
+
+
+
+
+   
 
    useEffect(() => {
     const interval = setInterval(() => {
@@ -228,9 +270,9 @@ useEffect(() => {
 }, [coordinates]);
 
 
- if (loading || (!coordinates.latitude && !coordinates.longitude)) {
-  return <SkeletonLoading />;
-}
+//  if (loading || (!coordinates.latitude && !coordinates.longitude)) {
+//   return <SkeletonLoading />;
+// }
 
 
   return (
@@ -352,11 +394,25 @@ useEffect(() => {
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredRooms.map((room) => (
-              <RoomCard key={room.id} {...room} />
-            ))}
-          </div>
+{loading ? (
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {Array.from({ length: 3 }).map((_, i) => (
+      <SkeletonLoading key={i} />
+    ))}
+  </div>
+) : (
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {featuredRooms.map((room) => (
+      <RoomCard
+        key={room.id}
+        {...room}
+        isFavorited={favorites.includes(room.id)}
+        onToggleFavorite={() => toggleFavorite(room.id)}
+      />
+    ))}
+  </div>
+)}
+
         </div>
       </section>
 

@@ -35,6 +35,8 @@ export function RoomCard({
   location,
   distance,
   image,
+  isFavorited,
+  onToggleFavorite,
   amenities,
   verified,
   rating,
@@ -77,12 +79,21 @@ export function RoomCard({
           </Badge>
         </div>
 
-        <button 
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors"
-          data-testid={`button-favorite-${id}`}
+          <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+          className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+            isFavorited
+              ? "bg-red-500 text-white"
+              : "bg-white/90 text-muted-foreground hover:text-red-500"
+          }`}
         >
-          <Heart className="w-4 h-4 text-muted-foreground hover:text-red-500 transition-colors" />
+          <Heart className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`} />
         </button>
+
 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div>
