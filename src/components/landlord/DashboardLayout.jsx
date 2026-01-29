@@ -3,6 +3,9 @@ import { Menu } from "lucide-react";
 import DashboardSidebar from "./DashboardSidebar";
 import DashboardRightSidebar from "./DashboardRightSidebar";
 import DashboardTopbar from "./DashboardTopbar";
+import FloatingSupport from "./FloatingSupport";
+import FloatingWhatsApp from "./FloatingWhatsApp";
+import FloatingAI from "./FloatingAI";
 
 export default function DashboardLayout({ active, setActive, children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -24,6 +27,7 @@ export default function DashboardLayout({ active, setActive, children }) {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         w-64`}
             >
+                
                 <DashboardSidebar
                     active={active}
                     setActive={(key) => {
@@ -38,10 +42,15 @@ export default function DashboardLayout({ active, setActive, children }) {
                 <DashboardTopbar onMenuClick={() => setSidebarOpen(true)} />
                 <main className="flex-1 p-4 md:p-6">{children}</main>
             </div>
+            <FloatingSupport />
 
             {/* Right sidebar (desktop only) */}
             <div className="hidden lg:block w-72 border-l border-border bg-card">
+                
                 <DashboardRightSidebar />
+                <FloatingWhatsApp />
+                <FloatingAI/>
+                
             </div>
         </div>
     );

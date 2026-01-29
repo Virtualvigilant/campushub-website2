@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Users, Building2, Briefcase } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { ErrorSocket } from "@/utils/ErrorSocket";
 
 const roles = [
   { key: "comrade", label: "Comrade", icon: Users },
@@ -21,6 +22,24 @@ export default function SignIn() {
   const [, setLocation] = useLocation();
   const [role, setRole] = useState("comrade");
   const [form, setForm] = useState({ email: "", password: "" });
+  const [errorSocket, setErrorSocket] = useState(null);
+
+    useEffect(() => {
+    // const unsubscribe = ErrorSocket.on((err) => {
+    //   console.log("Global error received:", err);
+    //   setErrorSocket(err);
+    // });
+    const unsubscribe = ErrorSocket.on((err) => {
+  if (err.status === 401) return; // ignore, handled globally
+  setErrorSocket(err);
+});
+
+
+    return unsubscribe; // cleanup
+  }, []);
+
+  const displayError = errorSocket?.message || error;
+
 
   // function handleRoleSelect(r) {
   //   if (r !== "comrade") {
@@ -32,6 +51,7 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorSocket(null);
     const ok = await login(form);
     if (ok) {
       setLocation("/auth-redirect");
@@ -41,6 +61,7 @@ export default function SignIn() {
 
     // MOCK LOGIN
     console.log("LOGIN DATA:", { role, ...form });
+    
 
     // alert("login successful!");
     // setLocation("/dashboard");
@@ -78,11 +99,25 @@ export default function SignIn() {
           </CardHeader>
 
           <CardContent>
-                          {error && (
+                          {/* {error && (
               <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
                 {error}
               </div>
             )}
+
+            {errorSocket && (
+              <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
+                {errorSocket.message}
+              </div>
+            )} */}
+
+            {displayError && (
+              <div className="mb-4 rounded-md border border-red-500 bg-red-50 p-3 text-red-600">
+                {displayError}
+              </div>
+            )}
+
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label>Email</Label>

@@ -1,4 +1,6 @@
 // src/utils/ApiSocket.js
+import { ErrorSocket } from "./ErrorSocket";
+
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "https://campushub4293.pythonanywhere.com";
@@ -49,6 +51,8 @@ const handleResponse = async (res) => {
     const e = new Error(error);
     e.status = res.status;
     e.data = data;
+
+    ErrorSocket.emit(e); // 🔥 Emit global error event
     throw e;
   }
 
@@ -104,7 +108,9 @@ async function apiRequest(path, options = {}) {
     const res = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
     return await handleResponse(res);
   } catch (err) {
-    console.error("[API ERROR]", err);
+    console.error("[API ERROR]", err);  
+
+    ErrorSocket.emit(err); // 🔥 Emit global error event
     throw err;
   }
 }
