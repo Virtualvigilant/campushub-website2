@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import Joyride from "react-joyride";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,9 @@ import { X } from "lucide-react";
 import { useLandlord } from "@/contexts/LandlordContext";
 import { useLocation } from "wouter";
 import ApiSocket from "@/utils/ApiSocket";
+import { useAuth } from "../../contexts/AuthContext";
+import { toast } from "react-hot-toast";
+import AuthPoller from "./AuthPoller";
 
 export default function DashboardHome({ properties, listings }) {
   const [data, setData] = useState({
@@ -13,10 +17,81 @@ export default function DashboardHome({ properties, listings }) {
     total_listings: 0,
   });
 
-  const [message, setMessage] = useState("");
+  const { authStatus } = useAuth();
   const { lordstatus } = useLandlord();
   const [, setLocation] = useLocation();
 
+  const [message, setMessage] = useState("");
+  const [runTour, setRunTour] = useState(false);
+
+  // ================= Guided Tour Steps =================
+  const landlordTourSteps = [
+    {
+      target: "body",
+      content: "👋 Welcome to your Landlord Dashboard! Let’s take a quick tour.",
+      placement: "center",
+    },
+    {
+      target: "#overview-cards",
+      content: "This section gives you a quick summary of your dashboard activity.",
+    },
+    {
+      target: "#total-properties-card",
+      content: "Here you can see how many properties you’ve added.",
+    },
+    {
+      target: "#total-listings-card",
+      content: "This shows how many listings are currently live for students.",
+    },
+    {
+      target: "#account-status-card",
+      content: "This is your verification status. Only verified accounts can post listings.",
+    },
+    {
+      target: "#welcome-message",
+      content: "Important messages and updates will appear here.",
+    },
+    {
+      target: "#verify",
+      content: "If your account is unverified, you’ll see this banner prompting you to verify.",
+    },
+    {
+  target: "#right-sidebar",
+  content: "This is your quick access sidebar for profile and account settings.",
+},
+{
+  target: "#sidebar-profile",
+  content: "View and manage your personal profile here.",
+},
+{
+  target: "#sidebar-account",
+  content: "Account settings, security, and preferences live here.",
+},
+{
+  target: "#sidebar-logout",
+  content: "Use this button to safely log out of your account.",
+},
+{
+  target: "#dashboard-sidebar",
+  content: "This is your main navigation panel.",
+},
+{
+  target: "#sidebar-item-dashboard",
+  content: "Your dashboard gives you a quick overview of activity.",
+},
+{
+  target: "#sidebar-item-properties",
+  content: "Manage and add your rental properties here.",
+},
+{
+  target: "#sidebar-item-listings",
+  content: "Control which properties are visible to students.",
+},
+
+
+  ];
+
+  // ================= Fetch Dashboard Overview =================
   useEffect(() => {
     const getOverview = async () => {
       try {
@@ -34,13 +109,55 @@ export default function DashboardHome({ properties, listings }) {
     getOverview();
   }, []);
 
+  // ================= Run Tour Only on First Visit =================
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem("landlord_dashboard_tour");
+    if (!hasSeenTour) {
+      setRunTour(true);
+    }
+  }, []);
+
+  // ================= Auth Guard ================= should run a useEffect that checks authstatus and redirects if unauthenticated
+// useEffect(() => {
+//   if (authStatus === "unauthenticated") {
+//     toast.error("Session timed out, please login again");
+//     console.log("Auth status is unauthenticated, redirecting to login...");
+//     setLocation("/signin");
+//   }
+// }, [authStatus, setLocation]);
+
+
   return (
     <>
+     {/* Auth poller to check session every 10 seconds */}
+      <AuthPoller />
+      {/* ================= Guided Tour ================= */}
+      <Joyride
+        steps={landlordTourSteps}
+        run={runTour}
+        continuous
+        showSkipButton
+        showProgress
+        disableOverlayClose
+        styles={{
+          options: {
+            primaryColor: "#2563eb",
+            zIndex: 10000,
+          },
+        }}
+        callback={(data) => {
+          if (data.status === "finished" || data.status === "skipped") {
+            localStorage.setItem("landlord_dashboard_tour", "true");
+            setRunTour(false);
+          }
+        }}
+      />
+
       <h1 className="text-2xl font-bold mb-4">Dashboard Overview</h1>
 
       {/* ================= Banner for unverified accounts ================= */}
-      {lordstatus === "pending" && (
-        <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      {lordstatus === "unverified" && (
+        <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-3" id="verify">
           <span className="text-sm md:text-base font-medium">
             ⚠️ Your account is currently unverified. Verify it to be able to post properties and listings.
           </span>
@@ -54,9 +171,18 @@ export default function DashboardHome({ properties, listings }) {
         </div>
       )}
 
+      {lordstatus === "pending" && (
+        <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <span className="text-sm md:text-base font-medium">
+            ⏳ Your account verification is pending. We are currently reviewing your documents.
+            This may take up to 48 hours.
+          </span>
+        </div>
+      )}
+
       {/* ================= Optional welcome/info message ================= */}
       {message && (
-        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded flex items-center justify-between">
+        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded flex items-center justify-between" id="welcome-message">
           <span>{message}</span>
           <button
             onClick={() => setMessage("")}
@@ -69,27 +195,36 @@ export default function DashboardHome({ properties, listings }) {
       )}
 
       {/* ================= Overview Cards ================= */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div
+        id="overview-cards"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <Card id="total-properties-card">
           <CardHeader>
             <CardTitle>Total Properties</CardTitle>
           </CardHeader>
-          <CardContent className="text-3xl font-bold">{data.total_properties}</CardContent>
+          <CardContent className="text-3xl font-bold">
+            {data.total_properties}
+          </CardContent>
         </Card>
 
-        <Card>
+        <Card id="total-listings-card">
           <CardHeader>
             <CardTitle>Total Listings</CardTitle>
           </CardHeader>
-          <CardContent className="text-3xl font-bold">{data.total_listings}</CardContent>
+          <CardContent className="text-3xl font-bold">
+            {data.total_listings}
+          </CardContent>
         </Card>
 
-        <Card>
+        <Card id="account-status-card">
           <CardHeader>
             <CardTitle>Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge>{lordstatus === "verified" ? "Active" : "Pending Verification"}</Badge>
+            <Badge>
+              {lordstatus === "verified" ? "Active" : "Pending Verification"}
+            </Badge>
           </CardContent>
         </Card>
       </div>

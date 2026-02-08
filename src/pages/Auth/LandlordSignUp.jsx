@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 /* ================= PAGE ================= */
 
 export default function LandlordSignUp() {
-  const { signup, mpesaSignup, error } = useAuth();
+  const { signup, mpesaSignup, error, authStatus } = useAuth();
   // const [plan, setPlan] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState({
     price: 0,
@@ -83,6 +83,14 @@ export default function LandlordSignUp() {
     cvc: "",
     name: "",
   });
+
+  // this snippet code prevents user from staying on the landlord signup page after successful signup by checking authStatus and redirecting to landlord dashboard if authenticated
+  // run useEffect user to landlord dashboard if authStatus changes to authenticated (after signup/login)
+  useEffect(() => {
+    if (authStatus === "authenticated") {
+      setLocation("/landlord-dashboard");
+    }
+  }, [authStatus, setLocation]);
 
   const handleMpesaPhoneChange = (e) => {
   let value = e.target.value;

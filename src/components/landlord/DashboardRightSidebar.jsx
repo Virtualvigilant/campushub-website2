@@ -16,15 +16,22 @@ export default function RightSidebar() {
   };
 
   return (
-    <aside className="h-full p-4 flex flex-col gap-4 border-l border-border bg-card">
-      {/* Profile */}
-      <Profile />
+    <aside
+      id="right-sidebar"
+      className="h-full p-4 flex flex-col gap-4 border-l border-border bg-card"
+    >
+      {/* ================= Profile ================= */}
+      <div id="sidebar-profile">
+        <Profile />
+      </div>
 
-      {/* Account */}
-      <Account />
+      {/* ================= Account ================= */}
+      <div id="sidebar-account">
+        <Account />
+      </div>
 
-      {/* Logout */}
-      <div className="mt-auto">
+      {/* ================= Logout ================= */}
+      <div id="sidebar-logout" className="mt-auto">
         <Button
           onClick={handleLogout}
           variant="ghost"

@@ -10,7 +10,7 @@ export default function Account() {
   const [, setLocation] = useLocation();
 
   const verificationStatus = profile?.verification?.status || "pending";
-  const isVerified = verificationStatus === "verified";
+  const isVerified = verificationStatus === "verified" || "pending";
   const plan = profile?.plan || "free";
   const isFreePlan = plan === "free";
 
@@ -34,7 +34,7 @@ export default function Account() {
           {isVerified ? (
             <Badge className="bg-green-600 hover:bg-green-600 gap-1">
               <BadgeCheck className="w-3 h-3" />
-              Verified
+              {verificationStatus}
             </Badge>
           ) : (
             <Badge variant="destructive" className="gap-1 capitalize">

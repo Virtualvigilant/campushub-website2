@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X, CheckCircle, Sparkles, TrendingUp, ShieldCheck } from "lucide-react";
+import {
+  X,
+  CheckCircle,
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
+} from "lucide-react";
+import { useLandlord, LORD } from "@/contexts/LandlordContext";
 
+/* =========================
+   COMMERCIAL DEFINITIONS
+========================= */
 const COMMERCIALS = {
   upgrade: {
     title: "🚀 Go Premium",
@@ -66,21 +76,49 @@ const COMMERCIALS = {
   },
 };
 
-export default function CommercialModal({ type, property, onClose, userPlan }) {
+/* =========================
+   COMMERCIAL MODAL
+========================= */
+export default function CommercialModal({ type, onClose }) {
   const [visible, setVisible] = useState(false);
 
+  // 🔗 Pull everything from context
+  const { profile, lordstatus } = useLandlord();
+
+  const userPlan = profile?.plan || "Free";
+  const properties = profile?.properties || [];
+  const hasProperties = properties.length > 0;
+
   useEffect(() => {
-    const shown = JSON.parse(sessionStorage.getItem("shownModals") || "[]");
+    if (!type) return;
+
+    const shown = JSON.parse(
+      sessionStorage.getItem("shownModals") || "[]"
+    );
     if (shown.includes(type)) return;
 
-    if (type === "upgrade" && userPlan === "Free") setVisible(true);
-    if (type === "verify" && property?.verified === 0) setVisible(true);
-    if (type === "analytics" && userPlan === "Free") setVisible(true);
-    if (type === "promo") setVisible(true);
-    if (type === "empty") setVisible(true);
+    /* =========================
+       VISIBILITY RULES
+    ========================= */
+    if (type === "upgrade" && userPlan === "Free") setVisible(false);
 
-    sessionStorage.setItem("shownModals", JSON.stringify([...shown, type]));
-  }, [type, property, userPlan]);
+    if (
+      type === "verify" &&
+      lordstatus === LORD.UNVERIFIED
+    )
+      setVisible(false);
+
+    if (type === "analytics" && userPlan === "Free") setVisible(false);
+
+    if (type === "promo") setVisible(false);
+
+    if (type === "empty" && !hasProperties) setVisible(false);
+
+    sessionStorage.setItem(
+      "shownModals",
+      JSON.stringify([...shown, type])
+    );
+  }, [type, userPlan, lordstatus, hasProperties]);
 
   if (!visible) return null;
 
@@ -91,14 +129,15 @@ export default function CommercialModal({ type, property, onClose, userPlan }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-none">
-
       <div
         className={`relative w-full ${ad.size} mx-4 rounded-3xl bg-white shadow-2xl border border-green-200 overflow-hidden ${ad.animation}`}
       >
         {/* Image Header */}
         <div className="relative h-40">
           <img src={ad.image} className="w-full h-full object-cover" />
-          <div className={`absolute inset-0 bg-gradient-to-r ${ad.gradient} opacity-80`} />
+          <div
+            className={`absolute inset-0 bg-gradient-to-r ${ad.gradient} opacity-80`}
+          />
           <div className="absolute bottom-4 left-5 text-white text-xl font-bold">
             {ad.title}
           </div>
@@ -112,7 +151,13 @@ export default function CommercialModal({ type, property, onClose, userPlan }) {
         )}
 
         {/* Close */}
-        <button onClick={() => { setVisible(false); onClose?.(); }} className="absolute top-4 left-4 text-white">
+        <button
+          onClick={() => {
+            setVisible(false);
+            onClose?.();
+          }}
+          className="absolute top-4 left-4 text-white"
+        >
           <X />
         </button>
 
@@ -123,14 +168,23 @@ export default function CommercialModal({ type, property, onClose, userPlan }) {
           {ad.features && (
             <div className="grid grid-cols-2 gap-3 mb-6">
               {ad.features.map((f) => (
-                <div key={f} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="text-green-600" size={18} /> {f}
+                <div
+                  key={f}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <CheckCircle
+                    className="text-green-600"
+                    size={18}
+                  />{" "}
+                  {f}
                 </div>
               ))}
             </div>
           )}
 
-          <Button className={`w-full h-12 text-white bg-gradient-to-r ${ad.gradient} hover:scale-[1.03] transition`}>
+          <Button
+            className={`w-full h-12 text-white bg-gradient-to-r ${ad.gradient} hover:scale-[1.03] transition`}
+          >
             {ad.cta}
           </Button>
         </div>
@@ -138,17 +192,71 @@ export default function CommercialModal({ type, property, onClose, userPlan }) {
 
       {/* Animations */}
       <style jsx>{`
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-wiggle { animation: wiggle 1s ease-in-out infinite; }
-        .animate-pulseSoft { animation: pulseSoft 2s infinite; }
-        .animate-slideUp { animation: slideUp .4s ease; }
-        .animate-bounceSoft { animation: bounceSoft 2s infinite; }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .animate-wiggle {
+          animation: wiggle 1s ease-in-out infinite;
+        }
+        .animate-pulseSoft {
+          animation: pulseSoft 2s infinite;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.4s ease;
+        }
+        .animate-bounceSoft {
+          animation: bounceSoft 2s infinite;
+        }
 
-        @keyframes float { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-6px);} }
-        @keyframes wiggle { 0%,100%{ transform: rotate(0);} 25%{ transform: rotate(1deg);} 75%{ transform: rotate(-1deg);} }
-        @keyframes pulseSoft { 0%,100%{ box-shadow: 0 0 0 0 rgba(34,197,94,.4);} 50%{ box-shadow: 0 0 0 12px rgba(34,197,94,0);} }
-        @keyframes slideUp { from{ transform: translateY(30px); opacity:0;} to{ transform: translateY(0); opacity:1;} }
-        @keyframes bounceSoft { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-5px);} }
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-6px);
+          }
+        }
+        @keyframes wiggle {
+          0%,
+          100% {
+            transform: rotate(0);
+          }
+          25% {
+            transform: rotate(1deg);
+          }
+          75% {
+            transform: rotate(-1deg);
+          }
+        }
+        @keyframes pulseSoft {
+          0%,
+          100% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            transform: translateY(30px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes bounceSoft {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
       `}</style>
     </div>
   );

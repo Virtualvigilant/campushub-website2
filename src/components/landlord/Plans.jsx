@@ -3,58 +3,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
+import { useLandlord } from "@/contexts/LandlordContext";
+
 
 export default function Plans() {
   const [, setLocation] = useLocation();
-
-  // Mock data - same format as your backend
-  const plans = [
-    {
-      id: 1,
-      name: "Free",
-      description: "Get started and try CompassHub with basic features",
-      features: ["List 1 property", "Limited visibility in search", "Receive student inquiries", "Email notifications"],
-      notIncluded: ["Priority listing", "Verification badge", "Analytics dashboard", "SMS notifications", "Featured placement"],
-      period: "month",
-      popular: false,
-      price: 0,
-    },
-    {
-      id: 2,
-      name: "Basic",
-      description: "Perfect for landlords with 1-2 properties",
-      features: ["List up to 2 properties", "Basic visibility in search", "Receive student inquiries", "Email notifications"],
-      notIncluded: ["Priority listing", "Verification badge", "Analytics dashboard"],
-      period: "month",
-      popular: false,
-      price: 300,
-    },
-    {
-      id: 3,
-      name: "Premium",
-      description: "Best value for growing landlords",
-      features: ["List up to 5 properties", "Priority visibility in search", "Receive student inquiries", "Email & SMS notifications", "Basic analytics", "Featured in recommendations"],
-      notIncluded: ["Verification badge"],
-      period: "month",
-      popular: true,
-      price: 700,
-    },
-    {
-      id: 4,
-      name: "Pro",
-      description: "For professional property managers",
-      features: ["Unlimited property listings", "Top ranking in search results", "Verification badge included", "Priority support", "Advanced analytics dashboard", "Featured homepage placement", "Bulk listing tools", "API access"],
-      notIncluded: [],
-      period: "month",
-      popular: false,
-      price: 1500,
-    },
-  ];
+  const [plans, setPlans] = useState([]);
+  const { getPlans, error } = useLandlord();
 
   const handleUpgrade = (planId) => {
     alert(`You clicked upgrade/select for plan ID: ${planId}`);
     // Example: setLocation(`/checkout/${planId}`);
   };
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      const plansdata = await getPlans();
+      if (plansdata) {
+        setPlans(plansdata);
+      }
+    };
+    fetchPlans();
+  }, [getPlans]);
 
   return (
     <div className="p-6 flex flex-col items-center">

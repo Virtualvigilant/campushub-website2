@@ -63,6 +63,8 @@ export const AuthProvider = ({ children }) => {
   //   if (authStatus) localStorage.setItem("auth_status", authStatus);
   //   else localStorage.removeItem("auth_status");
   // }, [authStatus]);
+
+  
   useEffect(() => {
   console.log("[Auth][useEffect] Updating localStorage for authStatus:", authStatus);
 
@@ -126,6 +128,8 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   };
+
+  
 
 
   

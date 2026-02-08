@@ -42,14 +42,14 @@ export default function DashboardLayout({ active, setActive, children }) {
                 <DashboardTopbar onMenuClick={() => setSidebarOpen(true)} />
                 <main className="flex-1 p-4 md:p-6">{children}</main>
             </div>
-            <FloatingSupport />
+            {/* <FloatingSupport /> */}
 
             {/* Right sidebar (desktop only) */}
             <div className="hidden lg:block w-72 border-l border-border bg-card">
                 
                 <DashboardRightSidebar />
-                <FloatingWhatsApp />
-                <FloatingAI/>
+                {/* <FloatingWhatsApp />
+                <FloatingAI/> */}
                 
             </div>
         </div>

@@ -16,7 +16,8 @@ export const LandlordProvider = ({ children }) => {
 
   // profile state
   const [profile, setProfile] = useState(null);
-
+  const [plans, setPlans] = useState([]);
+  const [error, setError] = useState(null);
   // landlord verification status
   const [lordstatus, setLordStatus] = useState(() => {
     return localStorage.getItem("lordstatus") || LORD.PENDING;
@@ -54,20 +55,37 @@ export const LandlordProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
+      setError(error);
       setProfile(null);
       setLordStatus(LORD.PENDING);
     }
   };
+
+ const getPlans = async () => {
+  try {
+    const res = await ApiSocket.get("/landlord/get_plans");
+    const plansdata = res?.data?.plans || res?.plans || [];
+
+    if (plansdata.length > 0) {
+      return plansdata;
+    }
+  } catch (error) {
+    console.error("Error fetching plans:", error);
+    setError(error);
+  }
+ }
 
   /* =========================
       CONTEXT VALUE
   ========================= */
   const value = {
     profile,
+    plans,
     setProfile,
     lordstatus,
     setLordStatus,
     refreshProfile: getProfile, // 👈 useful later
+    getPlans,
   };
 
   console.log("LandlordContext profile:", profile);

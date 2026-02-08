@@ -24,6 +24,7 @@ import LandlordDashboard from "./pages/LandlordDashboard"
 import FullProfile from "./components/landlord/FullProfile";
 import Plans from "./components/landlord/Plans";
 import Verification from "./components/landlord/Verification";
+import MarketPlaceLoad from "./pages/comrade/MarketPlaceLoad";
 
 
 
@@ -42,9 +43,14 @@ if (authStatus === "unauthenticated") {
       <Route path="/landlord" component={Landlord} />
       <Route path="/profile" component={Profile} />
       <Route path="/landlord-dashboard" component={LandlordDashboard} />
+      <Route path="/marketplace" component={MarketPlaceLoad} />
 
       <Route path="/landlord-signup">
         <LandlordSignUp />
+
+        {/* AUTH */}
+      <Route path="/signin" component={SignIn} />
+      <Route path="/signup" component={SignUp} />
       </Route>
 
 
@@ -83,6 +89,11 @@ if (authStatus === "authenticated") {
       <Route path="/landlord-signup">
         <LandlordSignUp />
       </Route>
+
+       {/* AUTH */}
+      <Route path="/signin" component={SignIn} />
+      <Route path="/signup" component={SignUp} />
+
 
 
 

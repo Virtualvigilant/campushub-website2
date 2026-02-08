@@ -12,6 +12,7 @@ import { RoomCard } from "@/components/RoomCard";
 import LoadingScreen from "@/pages/Auth/LoadingScreen"
 import { ApiSocket} from "@/utils/ApiSocket";
 import SkeletonLoading from "@/components/SkeletonLoading";
+import CountdownBanner from "@/components/CountdownBanner";
 import { 
   Search, 
   SlidersHorizontal, 
@@ -28,21 +29,7 @@ const roomTypes = ["All Types", "Single Room", "Bedsitter", "Studio", "1 Bedroom
 const distances = ["Any Distance", "< 500m", "< 1km", "< 2km", "< 5km"];
 
 export default function Listings() {
-  const [ allRooms, setAllRooms ] = useState([
-    {
-    id: "8",
-    title: "Affordable Bedsitter for Students",
-    type: "Bedsitter",
-    price: 7000,
-    location: "Lavington",
-    distance: "1.8km",
-    image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600",
-    amenities: ["Water", "Electricity"],
-    verified: true,
-    rating: 4.3,
-    reviews: 22,
-  }
-  ])
+  const [ allRooms, setAllRooms ] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedType, setSelectedType] = useState("All Types");
@@ -98,6 +85,10 @@ const toggleFavorite = (roomId) => {
         !room.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
+  
+
+  
 
   const activeFiltersCount = [
     selectedType !== "All Types",
@@ -213,7 +204,13 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+
       
+  {/* Show banner only if there are no listings */}
+  {filteredRooms.length === 0 && <CountdownBanner durationDays={7} />}
+
+  {allRooms.length === 0 && <CountdownBanner durationDays={7} />}    
+  
       <main className="pt-20 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-8">

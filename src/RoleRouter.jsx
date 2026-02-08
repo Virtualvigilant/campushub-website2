@@ -10,6 +10,9 @@ export default function RoleRouter() {
   if (user.role === "landlord") {
     return <Redirect to="/landlord-dashboard" />;
   }
+  if (user.role === "comrade") {
+    return <Redirect to="/profile" />;
+  }
 
   return <Redirect to="/listings" />;
 }
