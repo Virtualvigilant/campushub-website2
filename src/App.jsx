@@ -33,74 +33,75 @@ function Router() {
   const { authStatus } = useAuth()
 
 
-// if unauthenticated
-if (authStatus === "unauthenticated") {
-  return (
-    <Switch>
-       <Route path="/" component={Home} />
-      <Route path="/listings" component={Listings} />
-      <Route path="/room" component={RoomDetail} />
-      <Route path="/landlord" component={Landlord} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/landlord-dashboard" component={LandlordDashboard} />
-      <Route path="/marketplace" component={MarketPlaceLoad} />
+  // if unauthenticated
+  if (authStatus === "unauthenticated") {
+    return (
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/listings" component={Listings} />
+        <Route path="/room" component={RoomDetail} />
+        <Route path="/landlord" component={Landlord} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/landlord-dashboard" component={LandlordDashboard} />
+        <Route path="/marketplace" component={MarketPlaceLoad} />
 
-      <Route path="/landlord-signup">
-        <LandlordSignUp />
+        <Route path="/landlord-signup">
+          <LandlordSignUp />
+
+          {/* AUTH */}
+          <Route path="/signin" component={SignIn} />
+          <Route path="/signup" component={SignUp} />
+        </Route>
+
 
         {/* AUTH */}
-      <Route path="/signin" component={SignIn} />
-      <Route path="/signup" component={SignUp} />
-      </Route>
+        <Route path="/signin" component={SignIn} />
+        <Route path="/signup" component={SignUp} />
+
+        {/* 404 fallback */}
+        <Route component={NotFound} />
+
+        {/* Force redirect for everything else */}
+        <Redirect to="/" />
+      </Switch>
+    );
+  }
 
 
-      {/* AUTH */}
-      <Route path="/signin" component={SignIn} />
-      <Route path="/signup" component={SignUp} />
-
-      {/* 404 fallback */}
-      <Route component={NotFound} />
-
-      {/* Force redirect for everything else */}
-      <Redirect to="/" />
-    </Switch>
-  );
-}
-
-  
   //if authenticated
 
-if (authStatus === "authenticated") {
-  return (
-    <Switch>
-      {/* Entry redirect */}
-      <Route path="/auth-redirect" component={RoleRouter} />
+  if (authStatus === "authenticated") {
+    return (
+      <Switch>
+        {/* Entry redirect */}
+        <Route path="/auth-redirect" component={RoleRouter} />
 
-      {/* Normal app pages */}
-      <Route path="/" component={Home} />
-      <Route path="/listings" component={Listings} />
-      <Route path="/room" component={RoomDetail} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/landlord" component={LandlordDashboard} />
-      <Route path="/landlord-dashboard" component={LandlordDashboard} />
-      <Route path="/full-profile" component={FullProfile} />
-      <Route path="/plans" component={Plans} />
-      <Route path="/verify-account" component={Verification} />
-      <Route path="/landlord-signup">
-        <LandlordSignUp />
-      </Route>
+        {/* Normal app pages */}
+        <Route path="/" component={Home} />
+        <Route path="/listings" component={Listings} />
+        <Route path="/room" component={RoomDetail} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/landlord" component={LandlordDashboard} />
+        <Route path="/landlord-dashboard" component={LandlordDashboard} />
+        <Route path="/marketplace" component={MarketPlaceLoad} />
+        <Route path="/full-profile" component={FullProfile} />
+        <Route path="/plans" component={Plans} />
+        <Route path="/verify-account" component={Verification} />
+        <Route path="/landlord-signup">
+          <LandlordSignUp />
+        </Route>
 
-       {/* AUTH */}
-      <Route path="/signin" component={SignIn} />
-      <Route path="/signup" component={SignUp} />
+        {/* AUTH */}
+        <Route path="/signin" component={SignIn} />
+        <Route path="/signup" component={SignUp} />
 
 
 
 
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
 
   // if (authStatus === "authenticated") {
   //   return (
@@ -139,7 +140,7 @@ if (authStatus === "authenticated") {
     )
   }
 
-    if (authStatus === "mpesa") {
+  if (authStatus === "mpesa") {
     return (
       <Switch>
         <Route>

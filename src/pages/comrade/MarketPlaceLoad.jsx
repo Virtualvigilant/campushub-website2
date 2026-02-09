@@ -5,14 +5,14 @@ export default function MarketPlaceLoad() {
   useEffect(() => {
     // Redirect AFTER animations + text display
     const timer = setTimeout(() => {
-      window.open("https://swapspot-pink.vercel.app/", "_blank");
+      window.location.href = "https://swapspot-pink.vercel.app/";
     }, 8000); // 5s merge + 5s text
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex flex-col items-center justify-center overflow-hidden">
+    <div className="w-screen h-screen bg-linear-to-br from-purple-500 via-pink-500 to-orange-400 flex flex-col items-center justify-center overflow-hidden">
 
       {/* Logos */}
       <div className="relative w-full h-32 mb-8 overflow-hidden">

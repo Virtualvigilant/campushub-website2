@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev:client": "vite",
-    "dev": "cross-env NODE_ENV=development node server/index.js",
+    "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "echo 'No TypeScript, skipping type check'",
@@ -100,6 +100,7 @@
     "esbuild": "^0.25.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
     "vite": "^7.1.9"
   },
   "optionalDependencies": {
